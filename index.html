@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Beat Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand mx-auto" href="#">Random Beat Generator</a>
+    </nav>
+
+    <div class="container mt-3 w-50 text-center">
+        <form class="form-group mb-2">
+            <div class="row mb-2">
+                    <select name="kicks" id="kicks" class="form-select-sm col-sm-8">
+                        <option value="kick1">Kick 1</option>
+                        <option value="kick2">Kick 2</option>
+                        <option value="Kick3">Kick 3</option>
+                        <option value="Kick4">Kick 4</option>
+                    </select>
+                <a href="" id="kick-midi-download" class="btn btn-secondary btn-sm col-sm-4">Kick Midi</a>
+            </div>
+            <div class="row mb-2">
+                <select name="snares" id="snares" class="form-select-sm col-sm-8">
+                    <option value="snare1">Snare 1</option>
+                    <option value="snare2">Snare 2</option>
+                    <option value="snare3">Snare 3</option>
+                    <option value="snare4">Snare 4</option>
+                </select>
+                <a href="midis/snares/snare.midi" id="snare-midi-download" class="btn btn-secondary btn-sm col-sm-4">Snare Midi</a>
+            </div>
+            <div class="row mb-2">
+                <select name="hats" id="hats" class="form-select-sm col-sm-8">
+                    <option value="hat1">Hat 1</option>
+                    <option value="hat2">Hat 2</option>
+                    <option value="hat3">Hat 3</option>
+                    <option value="hat4">Hat 4</option>
+                </select>
+                <a href="" id="hat-midi-download" class="btn btn-secondary btn-sm col-sm-4">Hat Midi</a>
+            </div>
+            <div class="row">
+                <button type="button" id="generate-beat" class="btn btn-outline-primary btn-sm col-sm-3 mx-auto">Generate Beat</button>
+            </div>
+        </form>
+
+        <button type="button" id="play" class="btn btn-primary">Play</button>
+    </div>
+
+    <footer class="mt-auto text-center">
+        <p><small>Created by Brandon Pacol</small></p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/@tonejs/midi"></script>
+    <script type="module" src="index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.5.44/Tone.js"></script>
+</body>
+</html>
