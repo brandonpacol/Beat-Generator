@@ -51,15 +51,15 @@ const generateMidi = async (midiArray) => {
     return writtenMidi
 }
 
-const playSample = async (sampleArray, midiArray) => {
+const playSample = async (sampleArray, midi) => {
     
     for (let i = 0; i < sampleArray.length; i++) {
         // load a midi file in the browser
-        const midi = await Midi.fromUrl(midiArray[i]);
+        // const midi = await Midi.fromUrl(outputMidi);
 
         const now = Tone.now() + 0.5;
 
-        midi.tracks[0].notes.forEach((note) => {
+        midi.tracks[i].notes.forEach((note) => {
             sampleArray[i].triggerAttackRelease(
                 note.name,
                 note.duration,
@@ -109,6 +109,6 @@ document.getElementById('generate-beat').addEventListener('click', async () => {
 
 document.getElementById('play').addEventListener('click', async () => {
     let sampleArray = [kick, snare, hat];
-    await playSample(sampleArray, midiArray);
+    await playSample(sampleArray, outputMidi);
     console.log('Playing ' + kickMidi + ' and ' + hatMidi +'.');
 });
