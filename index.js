@@ -12,6 +12,12 @@ var kickMidi = kickMidis[getRandomInt(4)];
 var snareMidi = 'snare.midi'
 var hatMidi = hatMidis[getRandomInt(4)];
 
+var kickMidiFile = kickMidiDir + kickMidi;
+var snareMidiFile = snareMidiDir + snareMidi;
+var hatMidiFile = hatMidiDir + hatMidi;
+
+var midiArray = [kickMidiFile, snareMidiFile, hatMidiFile];
+
 document.getElementById('kick-midi-download').href = kickMidiDir + kickMidi;
 document.getElementById('hat-midi-download').href = hatMidiDir + hatMidi;
 
@@ -26,25 +32,49 @@ const generateSample = (filename, directory) => {
     return sampler;
 }
 
-const playSample = async (sampler, midiFile) => {
-    // load a midi file in the browser
-    const midi = await Midi.fromUrl(midiFile);
+const generateMidi = async (midiArray) => {
+    // write to midi
+    var writtenMidi = new Midi();
+    for (let i = 0; i < midiArray.length; i++) {
+        const midi = await Midi.fromUrl(midiArray[i]);
+        const track = writtenMidi.addTrack()
+        midi.tracks[0].notes.forEach((note) => {
+            track.addNote(({
+                name : note.name,
+                duration : note.duration,
+                time : note.time,
+                velocity : note.velocity
+            }))
+        });
+    }
 
-    const now = Tone.now() + 0.5;
+    return writtenMidi
+}
 
-    midi.tracks[0].notes.forEach((note) => {
-        sampler.triggerAttackRelease(
-            note.name,
-            note.duration,
-            note.time + now,
-            note.velocity
-        );
-    });
+const playSample = async (sampleArray, midiArray) => {
+    
+    for (let i = 0; i < sampleArray.length; i++) {
+        // load a midi file in the browser
+        const midi = await Midi.fromUrl(midiArray[i]);
+
+        const now = Tone.now() + 0.5;
+
+        midi.tracks[0].notes.forEach((note) => {
+            sampleArray[i].triggerAttackRelease(
+                note.name,
+                note.duration,
+                note.time + now,
+                note.velocity
+            );
+        });
+    }
 }
 
 function getRandomInt(max) {
     return Math.floor(Math.random() * max);
 }
+
+var outputMidi = await generateMidi(midiArray)
 
 var kick = generateSample('kick1.wav', kickSampleDir);
 var snare = generateSample('snare1.wav', snareSampleDir);
@@ -66,14 +96,19 @@ document.getElementById('generate-beat').addEventListener('click', async () => {
     kickMidi = kickMidis[getRandomInt(4)];
     hatMidi = hatMidis[getRandomInt(4)];
 
-    document.getElementById('kick-midi-download').href = kickMidiDir + kickMidi;
-    document.getElementById('hat-midi-download').href = hatMidiDir + hatMidi;
+    kickMidiFile = kickMidiDir + kickMidi;
+    hatMidiFile = hatMidiDir + hatMidi;
+
+    midiArray = [kickMidiFile, snareMidiFile, hatMidiFile];
+    outputMidi = await generateMidi(midiArray)
+    console.log('output midi: ' + outputMidi.tracks)
+
+    document.getElementById('kick-midi-download').href = kickMidiFile;
+    document.getElementById('hat-midi-download').href = hatMidiFile;
 })
 
 document.getElementById('play').addEventListener('click', async () => {
-    await playSample(kick, kickMidiDir + kickMidi);
-    await playSample(snare, snareMidiDir + snareMidi);
-    await playSample(hat, hatMidiDir + hatMidi);
-
+    let sampleArray = [kick, snare, hat];
+    await playSample(sampleArray, midiArray);
     console.log('Playing ' + kickMidi + ' and ' + hatMidi +'.');
 });
