@@ -12,6 +12,10 @@ var kickMidi = kickMidis[getRandomInt(4)];
 var snareMidi = 'snare.midi'
 var hatMidi = hatMidis[getRandomInt(4)];
 
+var kickMidiFile = kickMidiDir + kickMidi;
+var snareMidiFile = snareMidiDir + snareMidi;
+var hatMidiFile = hatMidiDir + hatMidi;
+
 document.getElementById('kick-midi-download').href = kickMidiDir + kickMidi;
 document.getElementById('hat-midi-download').href = hatMidiDir + hatMidi;
 
@@ -29,9 +33,8 @@ const generateSample = (filename, directory) => {
 const generateMidi = async (midiArray) => {
     // write to midi
     var writtenMidi = new Midi();
-
-    // midiArray.forEach(async (midiFile) => {
-        const midi = await Midi.fromUrl(midiArray[0]);
+    for (let i = 0; i < midiArray.length; i++) {
+        const midi = await Midi.fromUrl(midiArray[i]);
         const track = writtenMidi.addTrack()
         midi.tracks[0].notes.forEach((note) => {
             track.addNote(({
@@ -41,18 +44,7 @@ const generateMidi = async (midiArray) => {
                 velocity : note.velocity
             }))
         });
-
-        const midi2 = await Midi.fromUrl(midiArray[1]);
-        const track2 = writtenMidi.addTrack()
-        midi2.tracks[0].notes.forEach((note) => {
-            track2.addNote(({
-                name : note.name,
-                duration : note.duration,
-                time : note.time,
-                velocity : note.velocity
-            }))
-        });
-    // })
+    }
 
     return writtenMidi
 }
@@ -80,6 +72,8 @@ function getRandomInt(max) {
     return Math.floor(Math.random() * max);
 }
 
+var outputMidi = await generateMidi([kickMidiFile, snareMidiFile, hatMidiFile])
+
 var kick = generateSample('kick1.wav', kickSampleDir);
 var snare = generateSample('snare1.wav', snareSampleDir);
 var hat = generateSample('hat1.wav', hatSampleDir);
@@ -100,18 +94,21 @@ document.getElementById('generate-beat').addEventListener('click', async () => {
     kickMidi = kickMidis[getRandomInt(4)];
     hatMidi = hatMidis[getRandomInt(4)];
 
-    let midiArray = [kickMidiDir + kickMidi, snareMidiDir + snareMidi, hatMidiDir + hatMidi];
-    const outputMidi = await generateMidi(midiArray)
+    kickMidiFile = kickMidiDir + kickMidi;
+    hatMidiFile = hatMidiDir + hatMidi;
+
+    let midiArray = [kickMidiFile, snareMidiFile, hatMidiFile];
+    outputMidi = await generateMidi(midiArray)
     console.log('output midi: ' + outputMidi.tracks)
 
-    document.getElementById('kick-midi-download').href = kickMidiDir + kickMidi;
-    document.getElementById('hat-midi-download').href = hatMidiDir + hatMidi;
+    document.getElementById('kick-midi-download').href = kickMidiFile;
+    document.getElementById('hat-midi-download').href = hatMidiFile;
 })
 
 document.getElementById('play').addEventListener('click', async () => {
-    await playSample(kick, kickMidiDir + kickMidi);
-    await playSample(snare, snareMidiDir + snareMidi);
-    await playSample(hat, hatMidiDir + hatMidi);
+    await playSample(kick, kickMidiFile);
+    await playSample(snare, snareMidiFile);
+    await playSample(hat, hatMidiFile);
 
     console.log('Playing ' + kickMidi + ' and ' + hatMidi +'.');
 });
