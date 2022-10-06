@@ -2,6 +2,10 @@
 #############
 .env
 
+# Folders #
+###########
+media/
+
 # Compiled source #
 ###################
 *.com

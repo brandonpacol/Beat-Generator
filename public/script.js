@@ -44,6 +44,38 @@ const APIController = (function() {
         return outputMidi;
     }
 
+    const _getMidi = async (drum) => {
+        const result = await fetch('/getMidi', {
+            method: "POST",
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              drum : drum
+            })});
+        const data = await result.json();
+        return data;
+    }
+
+    const _getSampleFile = (drum, filename) => {
+        return '/media/samples/' + drum + '/' + filename;
+    }
+
+    const _getSampleList = async (drum) => {
+        const result = await fetch('/getSamples', {
+            method: "POST",
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              drum : drum
+            })});
+        const data = await result.json();
+        return data;       
+    }
+
     return {
         setKickSampler(kickSampler) {
             return _setKickSampler(kickSampler);
@@ -74,6 +106,15 @@ const APIController = (function() {
         },
         getOutputMidi() {
             return _getOutputMidi();
+        },
+        getMidi(drum) {
+            return _getMidi(drum);
+        },
+        getSampleFile(drum, filename) {
+            return _getSampleFile(drum, filename);
+        },
+        getSampleList(drum) {
+            return _getSampleList(drum);
         }
     }
 })();
@@ -110,6 +151,19 @@ const UIController = (function() {
                 setSamples: document.querySelector(DOMElements.setSamples),
                 play: document.querySelector(DOMElements.play)
             }
+        },
+
+        changeDownload(domElement, midiFile) {
+            domElement.href = midiFile;
+        },
+
+        getSampleInput(domElement) {
+            return domElement.value;
+        },
+
+        createListOptions(domElement, filename, label) {
+            const html = `<option value="${filename}">${label}</option>`
+            domElement.insertAdjacentHTML('beforeend', html);
         }
     }
 
@@ -121,12 +175,12 @@ const APPController = (function(UICtrl, APICtrl) {
     const DOMInputs = UICtrl.inputField();
     
     // tone js functions
-    const generateSample = (filename, directory) => {
+    const generateSample = (filename) => {
         const sampler = new Tone.Sampler({
             urls: {
                 C3: filename,
             },
-            baseUrl: directory
+            // baseUrl: directory
         }).toDestination();
     
         return sampler;
@@ -134,7 +188,7 @@ const APPController = (function(UICtrl, APICtrl) {
     
     const generateMidi = async (midiArray) => {
         // write to midi
-        var writtenMidi = new Midi();
+        let writtenMidi = new Midi();
         for (let i = 0; i < midiArray.length; i++) {
             const midi = await Midi.fromUrl(midiArray[i]);
             const track = writtenMidi.addTrack()
@@ -154,8 +208,6 @@ const APPController = (function(UICtrl, APICtrl) {
         
         for (let i = 0; i < sampleArray.length; i++) {
             // load a midi file in the browser
-            // const midi = await Midi.fromUrl(outputMidi);
-    
             const now = Tone.now() + 0.5;
     
             midi.tracks[i].notes.forEach((note) => {
@@ -174,45 +226,38 @@ const APPController = (function(UICtrl, APICtrl) {
         return Math.floor(Math.random() * max);
     }
 
-    const generateBeat = async () => {
-        var kickMidiDir = 'midis/kicks/';
-        var snareMidiDir = 'midis/snares/';
-        var hatMidiDir = 'midis/hats/';
-        
-        var kickMidis = ['kick1.midi', 'kick2.midi', 'kick3.midi', 'kick4.midi'];
-        var hatMidis = ['hat1.midi', 'hat2.midi', 'hat3.midi', 'hat4.midi'];
-        
-        var kickMidi = kickMidis[getRandomInt(4)];
-        var snareMidi = 'snare.midi'
-        var hatMidi = hatMidis[getRandomInt(4)]; 
-    
-        var kickMidiFile = kickMidiDir + kickMidi;
-        var snareMidiFile = snareMidiDir + snareMidi;
-        var hatMidiFile = hatMidiDir + hatMidi;
-    
-        var midiArray = [kickMidiFile, snareMidiFile, hatMidiFile];
+    const generateBeat = async () => {    
+        let kickMidiFile = await APICtrl.getMidi('kicks');
+        let snareMidiFile = await APICtrl.getMidi('snares');
+        let hatMidiFile = await APICtrl.getMidi('hats');
+
+        kickMidiFile = kickMidiFile.midi;
+        snareMidiFile = snareMidiFile.midi;
+        hatMidiFile = hatMidiFile.midi;
+
+        let midiArray = [kickMidiFile, snareMidiFile, hatMidiFile];
         APICtrl.setMidiArray(midiArray);
-        var outputMidi = await generateMidi(midiArray);
+        let outputMidi = await generateMidi(midiArray);
         APICtrl.setOutputMidi(outputMidi);
         console.log('output midi: ' + outputMidi.tracks);
     
-        DOMInputs.kickMidiDownload.href = kickMidiFile;
-        DOMInputs.snareMidiDownload.href = snareMidiFile;
-        DOMInputs.hatMidiDownload.href = hatMidiFile;
+        UICtrl.changeDownload(DOMInputs.kickMidiDownload, kickMidiFile);
+        UICtrl.changeDownload(DOMInputs.snareMidiDownload, snareMidiFile);
+        UICtrl.changeDownload(DOMInputs.hatMidiDownload, hatMidiFile);
     }
 
     const setSamples = () => {
-        var kickSampleDir = 'samples/kicks/';
-        var snareSampleDir = 'samples/snares/';
-        var hatSampleDir = 'samples/hats/';
+        let selectedKick = UICtrl.getSampleInput(DOMInputs.kicks);
+        let selectedSnare = UICtrl.getSampleInput(DOMInputs.snares);
+        let selectedHat = UICtrl.getSampleInput(DOMInputs.hats);
 
-        let selectedKick = DOMInputs.kicks.value + '.wav';
-        let selectedSnare = DOMInputs.snares.value + '.wav';
-        let selectedHat = DOMInputs.hats.value + '.wav';
+        let kickFile = APICtrl.getSampleFile('kicks', selectedKick);
+        let snareFile = APICtrl.getSampleFile('snares', selectedSnare);
+        let hatFile = APICtrl.getSampleFile('hats', selectedHat);
     
-        var kick = generateSample(selectedKick, kickSampleDir);
-        var snare = generateSample(selectedSnare, snareSampleDir);
-        var hat = generateSample(selectedHat, hatSampleDir);
+        let kick = generateSample(kickFile);
+        let snare = generateSample(snareFile);
+        let hat = generateSample(hatFile);
 
         APICtrl.setKickSampler(kick);
         APICtrl.setSnareSampler(snare);
@@ -220,11 +265,26 @@ const APPController = (function(UICtrl, APICtrl) {
     }
 
     const loadinitialPage = async () => {
-        generateBeat();
-        setSamples();
+        let kickSamples = await APICtrl.getSampleList('kicks');
+        for (let i = 0; i < kickSamples.length; i++) {
+            UICtrl.createListOptions(DOMInputs.kicks, kickSamples[i], 'Kick ' + (i + 1));
+        }
+
+        let snareSamples = await APICtrl.getSampleList('snares');
+        for (let i = 0; i < snareSamples.length; i++) {
+            UICtrl.createListOptions(DOMInputs.snares, snareSamples[i], 'Snare ' + (i + 1));
+        }
+
+        let hatSamples = await APICtrl.getSampleList('hats');
+        for (let i = 0; i < hatSamples.length; i++) {
+            UICtrl.createListOptions(DOMInputs.hats, hatSamples[i], 'Hat ' + (i + 1));
+        }
+
+        await generateBeat();
+        await setSamples();
     }
     
-    // dom functions
+    // DOM functions
     DOMInputs.generateBeat.addEventListener('click', async () => {
         generateBeat();
     })
