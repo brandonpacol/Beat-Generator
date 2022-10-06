@@ -1,0 +1,26 @@
+{
+  "name": "random-beat-maker",
+  "version": "1.0.0",
+  "description": "Randomly combine midi files to create a beat!",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brandonpacol/Beat-Generator.git"
+  },
+  "author": "Brandon Pacol",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brandonpacol/Beat-Generator/issues"
+  },
+  "homepage": "https://github.com/brandonpacol/Beat-Generator#readme",
+  "dependencies": {
+    "express": "^4.18.1"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.3",
+    "nodemon": "^2.0.20"
+  }
+}
