@@ -85,14 +85,6 @@ snare.volume.value = -12;
 hat.volume.value = -16;
 
 document.getElementById('generate-beat').addEventListener('click', async () => {
-    let selectedKick = document.getElementById('kicks').value + '.wav';
-    let selectedSnare = document.getElementById('snares').value + '.wav';
-    let selectedHat = document.getElementById('hats').value + '.wav';
-
-    kick = generateSample(selectedKick, kickSampleDir);
-    snare = generateSample(selectedSnare, snareSampleDir);
-    hat = generateSample(selectedHat, hatSampleDir);
-    
     kickMidi = kickMidis[getRandomInt(4)];
     hatMidi = hatMidis[getRandomInt(4)];
 
@@ -106,6 +98,17 @@ document.getElementById('generate-beat').addEventListener('click', async () => {
     document.getElementById('kick-midi-download').href = kickMidiFile;
     document.getElementById('hat-midi-download').href = hatMidiFile;
 })
+
+document.getElementById('set-samples').addEventListener('click', () => {
+    let selectedKick = document.getElementById('kicks').value + '.wav';
+    let selectedSnare = document.getElementById('snares').value + '.wav';
+    let selectedHat = document.getElementById('hats').value + '.wav';
+
+    kick = generateSample(selectedKick, kickSampleDir);
+    snare = generateSample(selectedSnare, snareSampleDir);
+    hat = generateSample(selectedHat, hatSampleDir);
+});
+
 
 document.getElementById('play').addEventListener('click', async () => {
     let sampleArray = [kick, snare, hat];
