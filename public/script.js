@@ -342,7 +342,12 @@ const APPController = (function(UICtrl, APICtrl) {
     })
     
     DOMInputs.setSamples.addEventListener('click', () => {
-        setSamples();
+        try {
+            setSamples();
+            DOMInputs.play.disabled = false;
+        } catch {
+            alert('Upload Custom Files!');
+        }
     });
 
     DOMInputs.kickUpload.addEventListener('click', (e) => {
@@ -428,6 +433,7 @@ const APPController = (function(UICtrl, APICtrl) {
         } else {
             $('#' + event.target.id).next().children()[0].disabled = false;
         }
+        DOMInputs.play.disabled = true;
     })
 
     return {

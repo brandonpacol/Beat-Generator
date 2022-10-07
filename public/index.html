@@ -21,7 +21,7 @@
                 </select>
                 <form class="file-upload-form">
                     <input class="form-control form-control-sm mb-1" id="kick-file" type="file" name="filename" accept="audio/mp3,audio/wav" required>
-                    <button type="submit" id="kick-upload" class="btn btn-outline-primary btn-sm mb-1" disabled>Upload</button>
+                    <button type="submit" id="kick-upload" class="w-100 btn btn-outline-primary btn-sm mb-1" disabled>Upload</button>
                 </form> 
                 <a href="" id="kick-midi-download" class="btn btn-secondary btn-sm">Kick Midi</a>
             </div>
@@ -31,7 +31,7 @@
                 </select>
                 <form class="file-upload-form">
                     <input class="form-control form-control-sm mb-1" id="snare-file" type="file" name="filename" required>
-                    <button type="submit" id="snare-upload" class="btn btn-outline-primary btn-sm mb-1" disabled>Upload</button>
+                    <button type="submit" id="snare-upload" class="w-100 btn btn-outline-primary btn-sm mb-1" disabled>Upload</button>
                 </form> 
                 <a href="midis/snares/snare.midi" id="snare-midi-download" class="btn btn-secondary btn-sm">Snare Midi</a>
             </div>
@@ -41,17 +41,17 @@
                 </select>
                 <form class="file-upload-form">
                     <input class="form-control form-control-sm mb-1" id="hat-file" type="file" name="filename" required>
-                    <button type="submit" id="hat-upload" class="btn btn-outline-primary btn-sm mb-1" disabled>Upload</button>
+                    <button type="submit" id="hat-upload" class="w-100 btn btn-outline-primary btn-sm mb-1" disabled>Upload</button>
                 </form> 
                 <a href="" id="hat-midi-download" class="btn btn-secondary btn-sm">Hat Midi</a>
             </div>
             <div class="mb-2">
-                <button type="button" id="set-samples" class="btn btn-outline-primary btn-sm col mx-auto">Set Samples</button>
+                <button type="button" id="set-samples" class="btn btn-danger btn-sm col mx-auto">Set Samples</button>
                 <button type="button" id="generate-beat" class="btn btn-outline-primary btn-sm col mx-auto">Generate Beat</button>
             </div>
         </div>
 
-        <button type="button" id="play" class="btn btn-primary">Play</button>
+        <button type="button" id="play" class="btn btn-primary" disabled>Play</button>
     </div>
 
     <!-- <form>
