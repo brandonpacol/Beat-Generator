@@ -133,7 +133,9 @@ const UIController = (function() {
         hats: '#hats',
         generateBeat: '#generate-beat',
         setSamples: '#set-samples',
-        play: '#play'
+        play: '#play',
+        formSelect: '#options',
+        fileUpload: '.file-upload'
     }
 
     //public methods
@@ -149,7 +151,9 @@ const UIController = (function() {
                 hats: document.querySelector(DOMElements.hats),
                 generateBeat: document.querySelector(DOMElements.generateBeat),
                 setSamples: document.querySelector(DOMElements.setSamples),
-                play: document.querySelector(DOMElements.play)
+                play: document.querySelector(DOMElements.play),
+                formSelect: document.querySelector(DOMElements.formSelect),
+                fileUpload: document.querySelector(DOMElements.fileUpload)
             }
         },
 
@@ -164,7 +168,16 @@ const UIController = (function() {
         createListOptions(domElement, filename, label) {
             const html = `<option value="${filename}">${label}</option>`
             domElement.insertAdjacentHTML('beforeend', html);
+        },
+
+        disableUpload(domElement) {
+            domElement.disabled = true;
+        },
+
+        enableUpload(domElement) {
+            domElement.disabled = false;
         }
+        
     }
 
 })();
@@ -281,7 +294,7 @@ const APPController = (function(UICtrl, APICtrl) {
         }
 
         await generateBeat();
-        await setSamples();
+        // await setSamples();
     }
     
     // DOM functions
@@ -304,6 +317,14 @@ const APPController = (function(UICtrl, APICtrl) {
         console.log('Playing ' + midiArray[0] + ' and ' + midiArray[2] +'.');
     });
     
+    DOMInputs.formSelect.addEventListener('change', (event) => {
+        if (event.target.value != 'custom') {
+            $('#' + event.target.id).next().prop('disabled', true);
+        } else {
+            $('#' + event.target.id).next().prop('disabled', false);
+        }
+    })
+
     return {
         init() {
             loadinitialPage();
