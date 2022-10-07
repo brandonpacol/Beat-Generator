@@ -143,7 +143,11 @@ const UIController = (function() {
         play: '#play',
         formSelect: '#options',
         kickUpload: '#kick-upload',
-        kickFile: '#kick-file'
+        kickFile: '#kick-file',
+        snareUpload: '#snare-upload',
+        snareFile: '#snare-file',
+        hatUpload: '#hat-upload',
+        hatFile: '#hat-file'
     }
 
     //public methods
@@ -162,7 +166,11 @@ const UIController = (function() {
                 play: document.querySelector(DOMElements.play),
                 formSelect: document.querySelector(DOMElements.formSelect),
                 kickUpload: document.querySelector(DOMElements.kickUpload),
-                kickFile: document.querySelector(DOMElements.kickFile)
+                kickFile: document.querySelector(DOMElements.kickFile),
+                snareUpload: document.querySelector(DOMElements.snareUpload),
+                snareFile: document.querySelector(DOMElements.snareFile),
+                hatUpload: document.querySelector(DOMElements.hatUpload),
+                hatFile: document.querySelector(DOMElements.hatFile)
             }
         },
 
@@ -280,8 +288,24 @@ const APPController = (function(UICtrl, APICtrl) {
         } else {
             kickFile = APICtrl.getSampleFile('kicks', selectedKick);
         }
-        let snareFile = APICtrl.getSampleFile('snares', selectedSnare);
-        let hatFile = APICtrl.getSampleFile('hats', selectedHat);
+
+
+        let snareFile
+        if (selectedSnare == 'custom') {
+            selectedSnare = DOMInputs.snareFile.files[0].name;
+            snareFile = APICtrl.getCustomSample(selectedSnare);
+        } else {
+            snareFile = APICtrl.getSampleFile('snares', selectedSnare);
+        }
+
+
+        let hatFile;
+        if (selectedHat == 'custom') {
+            selectedHat = DOMInputs.hatFile.files[0].name;
+            hatFile = APICtrl.getCustomSample(selectedHat);
+        } else {
+            hatFile = APICtrl.getSampleFile('hats', selectedHat);
+        }
     
         let kick = generateSample(kickFile);
         let snare = generateSample(snareFile);
@@ -327,7 +351,27 @@ const APPController = (function(UICtrl, APICtrl) {
 
         xhttp.open("POST", "kickUpload")
         var formData = new FormData()
-        formData.append('kick', document.getElementById('kick-file').files[0]) // since inputs allow multi files submission, therefore files are in array
+        formData.append('kick', DOMInputs.kickFile.files[0]);
+        xhttp.send(formData)
+    })
+
+    DOMInputs.snareUpload.addEventListener('click', (e) => {
+        e.preventDefault();
+        var xhttp = new XMLHttpRequest();
+
+        xhttp.open("POST", "snareUpload")
+        var formData = new FormData()
+        formData.append('snare', DOMInputs.snareFile.files[0]);
+        xhttp.send(formData)
+    })
+
+    DOMInputs.hatUpload.addEventListener('click', (e) => {
+        e.preventDefault();
+        var xhttp = new XMLHttpRequest();
+
+        xhttp.open("POST", "hatUpload")
+        var formData = new FormData()
+        formData.append('hat', DOMInputs.hatFile.files[0]);
         xhttp.send(formData)
     })
     

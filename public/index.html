@@ -19,7 +19,7 @@
                 <select name="kicks" id="kicks" class="form-select-sm mb-1">
                     <option value="custom">Custom</option>
                 </select>
-                <form action='/single' method='post' encType="multipart/form-data">
+                <form action='/kickUpload' method='post' encType="multipart/form-data">
                     <input class="form-control form-control-sm mb-1" id="kick-file" type="file" name="filename" required>
                     <button type="submit" id="kick-upload" class="btn btn-outline-primary btn-sm mb-1">Upload</button>
                 </form> 
@@ -29,16 +29,20 @@
                 <select name="snares" id="snares" class="form-select-sm mb-1">
                     <option value="custom">Custom</option>
                 </select>
-                <input class="form-control form-control-sm mb-1" id="snareUpload" type="file" required>
-                <button type="button" id="snare-upload" class="btn btn-outline-primary btn-sm mb-1">Upload</button>
+                <form action='/snareUpload' method='post' encType="multipart/form-data">
+                    <input class="form-control form-control-sm mb-1" id="snare-file" type="file" name="filename" required>
+                    <button type="submit" id="snare-upload" class="btn btn-outline-primary btn-sm mb-1">Upload</button>
+                </form> 
                 <a href="midis/snares/snare.midi" id="snare-midi-download" class="btn btn-secondary btn-sm">Snare Midi</a>
             </div>
             <div class="col-sm-4 d-flex flex-column mb-2">
                 <select name="hats" id="hats" class="form-select-sm mb-1">
                     <option value="custom">Custom</option>
                 </select>
-                <input class="form-control form-control-sm mb-1" id="hatUpload" type="file" required>
-                <button type="button" id="hat-upload" class="btn btn-outline-primary btn-sm mb-1">Upload</button>
+                <form action='/hatUpload' method='post' encType="multipart/form-data">
+                    <input class="form-control form-control-sm mb-1" id="hat-file" type="file" name="filename" required>
+                    <button type="submit" id="hat-upload" class="btn btn-outline-primary btn-sm mb-1">Upload</button>
+                </form> 
                 <a href="" id="hat-midi-download" class="btn btn-secondary btn-sm">Hat Midi</a>
             </div>
             <div class="mb-2">

@@ -71,7 +71,7 @@ app.post('/kickUpload', (req, res) => {
         sampleFile.mv(uploadPath);
         console.log('uploaded kick')
     } else {
-        console.log('error uploading')
+        console.log('error uploading kick')
     }
     res.end();
 })
@@ -83,7 +83,7 @@ app.post('/snareUpload', (req, res) => {
         sampleFile.mv(uploadPath);
         console.log('uploaded Snare')
     } else {
-        console.log('error uploading')
+        console.log('error uploading snare')
     }
     res.end();
 })
@@ -95,7 +95,7 @@ app.post('/hatUpload', (req, res) => {
         sampleFile.mv(uploadPath);
         console.log('uploaded Hat')
     } else {
-        console.log('error uploading')
+        console.log('error uploading hat')
     }
     res.end();
 })
