@@ -69,9 +69,10 @@ app.post('/kickUpload', (req, res) => {
         let sampleFile = req.files.kick;
         let uploadPath = __dirname + '/public/uploads/' + sampleFile.name;
         sampleFile.mv(uploadPath);
-        console.log('uploaded kick')
+        console.log('uploaded kick');
     } else {
-        console.log('error uploading kick')
+        console.log('error uploading kick');
+        res.status(400);
     }
     res.end();
 })

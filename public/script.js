@@ -347,32 +347,65 @@ const APPController = (function(UICtrl, APICtrl) {
 
     DOMInputs.kickUpload.addEventListener('click', (e) => {
         e.preventDefault();
-        var xhttp = new XMLHttpRequest();
+        const filesize = DOMInputs.kickFile.files[0].size / 1024 / 1024;
+        if(filesize > 1) {
+            alert('File exceeds 1MB.');
+        } else {
+            var xhttp = new XMLHttpRequest();
+    
+            xhttp.open("POST", "kickUpload")
+            var formData = new FormData()
+            formData.append('kick', DOMInputs.kickFile.files[0]);
+            xhttp.send(formData)
+        }
+    })
 
-        xhttp.open("POST", "kickUpload")
-        var formData = new FormData()
-        formData.append('kick', DOMInputs.kickFile.files[0]);
-        xhttp.send(formData)
+    DOMInputs.kickFile.addEventListener('change', () => {
+        if (DOMInputs.kickFile.files.length > 0) {
+            DOMInputs.kickUpload.disabled = false;
+        }
     })
 
     DOMInputs.snareUpload.addEventListener('click', (e) => {
         e.preventDefault();
-        var xhttp = new XMLHttpRequest();
+        const filesize = DOMInputs.snareFile.files[0].size / 1024 / 1024;
+        if(filesize > 1) {
+            alert('File exceeds 1MB.');
+        } else {
+            var xhttp = new XMLHttpRequest();
 
-        xhttp.open("POST", "snareUpload")
-        var formData = new FormData()
-        formData.append('snare', DOMInputs.snareFile.files[0]);
-        xhttp.send(formData)
+            xhttp.open("POST", "snareUpload")
+            var formData = new FormData()
+            formData.append('snare', DOMInputs.snareFile.files[0]);
+            xhttp.send(formData)
+        }
+    })
+
+    DOMInputs.snareFile.addEventListener('change', () => {
+        if (DOMInputs.snareFile.files.length > 0) {
+            DOMInputs.snareUpload.disabled = false;
+        }
     })
 
     DOMInputs.hatUpload.addEventListener('click', (e) => {
         e.preventDefault();
-        var xhttp = new XMLHttpRequest();
+        const filesize = DOMInputs.hatFile.files[0].size / 1024 / 1024;
+        if(filesize > 1) {
+            alert('File exceeds 1MB.');
+        } else {
+            var xhttp = new XMLHttpRequest();
 
-        xhttp.open("POST", "hatUpload")
-        var formData = new FormData()
-        formData.append('hat', DOMInputs.hatFile.files[0]);
-        xhttp.send(formData)
+            xhttp.open("POST", "hatUpload")
+            var formData = new FormData()
+            formData.append('hat', DOMInputs.hatFile.files[0]);
+            xhttp.send(formData)
+        }
+    })
+
+    DOMInputs.hatFile.addEventListener('change', () => {
+        if (DOMInputs.hatFile.files.length > 0) {
+            DOMInputs.hatUpload.disabled = false;
+        }
     })
     
     DOMInputs.play.addEventListener('click', async () => {
@@ -386,13 +419,16 @@ const APPController = (function(UICtrl, APICtrl) {
         console.log('Playing ' + midiArray[0] + ' and ' + midiArray[2] +'.');
     });
     
-    // DOMInputs.formSelect.addEventListener('change', (event) => {
-    //     if (event.target.value != 'custom') {
-    //         $('#' + event.target.id).next().prop('disabled', true);
-    //     } else {
-    //         $('#' + event.target.id).next().prop('disabled', false);
-    //     }
-    // })
+    DOMInputs.formSelect.addEventListener('change', (event) => {
+        if (event.target.value != 'custom') {
+            if ($('#' + event.target.id).next().attr('class') == 'file-upload-form') {
+                $('#' + event.target.id).next().children()[0].disabled = true;
+                $('#' + event.target.id).next().children()[1].disabled = true;
+            }
+        } else {
+            $('#' + event.target.id).next().children()[0].disabled = false;
+        }
+    })
 
     return {
         init() {
