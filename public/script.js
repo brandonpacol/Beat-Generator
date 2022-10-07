@@ -135,7 +135,7 @@ const UIController = (function() {
         setSamples: '#set-samples',
         play: '#play',
         formSelect: '#options',
-        fileUpload: '.file-upload'
+        kickUpload: '#kick-upload'
     }
 
     //public methods
@@ -153,7 +153,7 @@ const UIController = (function() {
                 setSamples: document.querySelector(DOMElements.setSamples),
                 play: document.querySelector(DOMElements.play),
                 formSelect: document.querySelector(DOMElements.formSelect),
-                fileUpload: document.querySelector(DOMElements.fileUpload)
+                kickUpload: document.querySelector(DOMElements.kickUpload)
             }
         },
 
@@ -294,17 +294,44 @@ const APPController = (function(UICtrl, APICtrl) {
         }
 
         await generateBeat();
-        // await setSamples();
+        // setSamples();
     }
     
     // DOM functions
     DOMInputs.generateBeat.addEventListener('click', async () => {
-        generateBeat();
+        await generateBeat();
     })
     
     DOMInputs.setSamples.addEventListener('click', () => {
         setSamples();
-    });  
+    });
+
+    // DOMInputs.kickUpload.addEventListener('click', (e) => {
+    //     e.preventDefault();
+    //     $.ajax({
+    //         url: '/upload',
+    //         method: 'POST',
+    //         contentType: 'application/json',
+    //         data: JSON.stringify({ test: 'test' }),
+    //         success: function (res) {
+    //             console.log('noice')
+    //         }
+    //     })
+    // })
+
+    // $('#options').on('submit', async function(event) {
+    //     event.preventDefault();
+    //     $.ajax({
+    //         url: '/upload',
+    //         method: 'POST',
+    //         contentType: 'application/json',
+    //         data: JSON.stringify({ test: 'test' }),
+    //         success: function (res) {
+    //             console.log('noice')
+    //         }
+    //     })
+    //     await setSamples();
+    // })
     
     DOMInputs.play.addEventListener('click', async () => {
         let outputMidi = APICtrl.getOutputMidi();
@@ -317,13 +344,13 @@ const APPController = (function(UICtrl, APICtrl) {
         console.log('Playing ' + midiArray[0] + ' and ' + midiArray[2] +'.');
     });
     
-    DOMInputs.formSelect.addEventListener('change', (event) => {
-        if (event.target.value != 'custom') {
-            $('#' + event.target.id).next().prop('disabled', true);
-        } else {
-            $('#' + event.target.id).next().prop('disabled', false);
-        }
-    })
+    // DOMInputs.formSelect.addEventListener('change', (event) => {
+    //     if (event.target.value != 'custom') {
+    //         $('#' + event.target.id).next().prop('disabled', true);
+    //     } else {
+    //         $('#' + event.target.id).next().prop('disabled', false);
+    //     }
+    // })
 
     return {
         init() {

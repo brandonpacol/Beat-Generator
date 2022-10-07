@@ -14,33 +14,37 @@
     </nav>
 
     <div class="container mt-3 text-center">
-        <form class="row form-group mb-2" id="options">
+        <div class="row mb-2" id="options">
             <div class="col-sm-4 d-flex flex-column mb-2">
                 <select name="kicks" id="kicks" class="form-select-sm mb-1">
                     <option value="custom">Custom</option>
                 </select>
-                <input class="form-control form-control-sm mb-1" id="kickUpload" type="file">
+                <form action='/single' method='post' encType="multipart/form-data">
+                    <input class="form-control form-control-sm mb-1" id="kickUpload" type="file" name="filename" required>
+                    <button type="submit" id="kick-upload" class="btn btn-outline-primary btn-sm mb-1">Upload</button>
+                </form> 
                 <a href="" id="kick-midi-download" class="btn btn-secondary btn-sm">Kick Midi</a>
             </div>
             <div class="col-sm-4 d-flex flex-column mb-2">
                 <select name="snares" id="snares" class="form-select-sm mb-1">
                     <option value="custom">Custom</option>
                 </select>
-                <input class="form-control form-control-sm mb-1" id="snareUpload" type="file">
+                <input class="form-control form-control-sm mb-1" id="snareUpload" type="file" required>
+                <button type="button" id="snare-upload" class="btn btn-outline-primary btn-sm mb-1">Upload</button>
                 <a href="midis/snares/snare.midi" id="snare-midi-download" class="btn btn-secondary btn-sm">Snare Midi</a>
             </div>
             <div class="col-sm-4 d-flex flex-column mb-2">
                 <select name="hats" id="hats" class="form-select-sm mb-1">
                     <option value="custom">Custom</option>
                 </select>
-                <input class="form-control form-control-sm mb-1" id="hatUpload" type="file">
+                <input class="form-control form-control-sm mb-1" id="hatUpload" type="file" required>
+                <button type="button" id="hat-upload" class="btn btn-outline-primary btn-sm mb-1">Upload</button>
                 <a href="" id="hat-midi-download" class="btn btn-secondary btn-sm">Hat Midi</a>
             </div>
-        </form>
-
-        <div class="mb-2">
-            <button type="button" id="set-samples" class="btn btn-outline-primary btn-sm col mx-auto">Set Samples</button>
-            <button type="button" id="generate-beat" class="btn btn-outline-primary btn-sm col mx-auto">Generate Beat</button>
+            <div class="mb-2">
+                <button type="button" id="set-samples" class="btn btn-outline-primary btn-sm col mx-auto">Set Samples</button>
+                <button type="button" id="generate-beat" class="btn btn-outline-primary btn-sm col mx-auto">Generate Beat</button>
+            </div>
         </div>
 
         <button type="button" id="play" class="btn btn-primary">Play</button>

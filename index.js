@@ -7,12 +7,15 @@ const path = require('path');
 const app = express();
 const port = 3000;
 var bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
+app.use(fileUpload());
 
 // create application/json parser
 var jsonParser = bodyParser.json();
 
 app.use(express.static('public'))
 app.use('/media', express.static('media'));
+
 
 app.listen(port, () => {
     console.log(`Example app listening on port http://localhost:${port}`)
@@ -55,9 +58,22 @@ app.post('/getSamples', jsonParser, (req, res) => {
                     sampleArray.push(file);
                 }
             })
-            console.log(sampleArray);
             res.json(sampleArray);
             res.end();
         }    
     })
+})
+
+app.post('/single', (req, res) => {
+    if (req.files) {
+        console.log(req.files);
+    } else {
+        console.log('error uploading')
+    }
+    res.redirect('/');
+})
+
+//page calls
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html')
 })
