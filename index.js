@@ -70,11 +70,11 @@ app.post('/kickUpload', (req, res) => {
         let uploadPath = __dirname + '/public/uploads/' + sampleFile.name;
         sampleFile.mv(uploadPath);
         console.log('uploaded kick');
+        res.send('noice')
     } else {
         console.log('error uploading kick');
         res.status(400);
     }
-    res.end();
 })
 
 app.post('/snareUpload', (req, res) => {

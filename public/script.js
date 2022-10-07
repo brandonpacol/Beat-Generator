@@ -252,10 +252,6 @@ const APPController = (function(UICtrl, APICtrl) {
     }
     
     // generated beat functions
-    const getRandomInt = (max) => {
-        return Math.floor(Math.random() * max);
-    }
-
     const generateBeat = async () => {    
         let kickMidiFile = await APICtrl.getMidi('kicks');
         let snareMidiFile = await APICtrl.getMidi('snares');
@@ -276,43 +272,48 @@ const APPController = (function(UICtrl, APICtrl) {
         UICtrl.changeDownload(DOMInputs.hatMidiDownload, hatMidiFile);
     }
 
-    const setSamples = () => {
-        let selectedKick = UICtrl.getSampleInput(DOMInputs.kicks);
-        let selectedSnare = UICtrl.getSampleInput(DOMInputs.snares);
-        let selectedHat = UICtrl.getSampleInput(DOMInputs.hats);
-
+    const setKickSample = (selectedKick) => {
         let kickFile;
         if (selectedKick == 'custom') {
-            selectedKick = DOMInputs.kickFile.files[0].name;
-            kickFile = APICtrl.getCustomSample(selectedKick);
+            if (DOMInputs.kickFile.files.length > 0) {
+                console.log('custom kick is loaded');
+                selectedKick = DOMInputs.kickFile.files[0].name;
+                kickFile = APICtrl.getCustomSample(selectedKick);
+            }
         } else {
             kickFile = APICtrl.getSampleFile('kicks', selectedKick);
         }
+        let kick = generateSample(kickFile);
+        APICtrl.setKickSampler(kick);
+    }
 
-
-        let snareFile
+    const setSnareSample = (selectedSnare) => {
+        let snareFile;
         if (selectedSnare == 'custom') {
-            selectedSnare = DOMInputs.snareFile.files[0].name;
-            snareFile = APICtrl.getCustomSample(selectedSnare);
+            if (DOMInputs.snareFile.files.length > 0) {
+                console.log('custom snare is loaded');
+                selectedSnare = DOMInputs.snareFile.files[0].name;
+                snareFile = APICtrl.getCustomSample(selectedSnare);
+            }
         } else {
             snareFile = APICtrl.getSampleFile('snares', selectedSnare);
         }
+        let snare = generateSample(snareFile);
+        APICtrl.setSnareSampler(snare);
+    }
 
-
+    const setHatSample = (selectedHat) => {
         let hatFile;
         if (selectedHat == 'custom') {
-            selectedHat = DOMInputs.hatFile.files[0].name;
-            hatFile = APICtrl.getCustomSample(selectedHat);
+            if (DOMInputs.hatFile.files.length > 0) {
+                console.log('custom hat is loaded');
+                selectedHat = DOMInputs.hatFile.files[0].name;
+                hatFile = APICtrl.getCustomSample(selectedHat);
+            }
         } else {
             hatFile = APICtrl.getSampleFile('hats', selectedHat);
         }
-    
-        let kick = generateSample(kickFile);
-        let snare = generateSample(snareFile);
         let hat = generateSample(hatFile);
-
-        APICtrl.setKickSampler(kick);
-        APICtrl.setSnareSampler(snare);
         APICtrl.setHatSampler(hat);
     }
 
@@ -333,22 +334,16 @@ const APPController = (function(UICtrl, APICtrl) {
         }
 
         await generateBeat();
-        // setSamples();
     }
     
     // DOM functions
     DOMInputs.generateBeat.addEventListener('click', async () => {
         await generateBeat();
     })
-    
-    DOMInputs.setSamples.addEventListener('click', () => {
-        try {
-            setSamples();
-            DOMInputs.play.disabled = false;
-        } catch {
-            alert('Upload Custom Files!');
-        }
-    });
+
+    DOMInputs.kicks.addEventListener('change', () => {
+        setKickSample(DOMInputs.kicks.value);
+    })
 
     DOMInputs.kickFile.addEventListener('change', () => {
         const filesize = DOMInputs.kickFile.files[0].size / 1024 / 1024;
@@ -360,8 +355,15 @@ const APPController = (function(UICtrl, APICtrl) {
             xhttp.open("POST", "kickUpload")
             var formData = new FormData()
             formData.append('kick', DOMInputs.kickFile.files[0]);
-            xhttp.send(formData)
+            xhttp.send(formData);
+            setTimeout(function(){
+                setKickSample(DOMInputs.kicks.value);
+            }, 1000)
         }
+    })
+
+    DOMInputs.snares.addEventListener('change', () => {
+        setSnareSample(DOMInputs.snares.value);
     })
 
     DOMInputs.snareFile.addEventListener('change', () => {
@@ -374,8 +376,15 @@ const APPController = (function(UICtrl, APICtrl) {
             xhttp.open("POST", "snareUpload")
             var formData = new FormData()
             formData.append('snare', DOMInputs.snareFile.files[0]);
-            xhttp.send(formData)
+            xhttp.send(formData);
+            setTimeout(function(){
+                setSnareSample(DOMInputs.snares.value);
+            }, 1000)
         }
+    })
+
+    DOMInputs.hats.addEventListener('change', () => {
+        setHatSample(DOMInputs.hats.value);
     })
 
     DOMInputs.hatFile.addEventListener('change', () => {
@@ -388,19 +397,26 @@ const APPController = (function(UICtrl, APICtrl) {
             xhttp.open("POST", "hatUpload")
             var formData = new FormData()
             formData.append('hat', DOMInputs.hatFile.files[0]);
-            xhttp.send(formData)
+            xhttp.send(formData);
+            setTimeout(function(){
+                setHatSample(DOMInputs.hats.value);
+            }, 1000)
         }
     })
     
     DOMInputs.play.addEventListener('click', async () => {
-        let outputMidi = APICtrl.getOutputMidi();
-        let kick = APICtrl.getKickSampler();
-        let snare = APICtrl.getSnareSampler();
-        let hat = APICtrl.getHatSampler();
-        let sampleArray = [kick, snare, hat];
-        await playSample(sampleArray, outputMidi);
-        let midiArray = APICtrl.getMidiArray();
-        console.log('Playing ' + midiArray[0] + ' and ' + midiArray[2] +'.');
+        try {
+            let outputMidi = APICtrl.getOutputMidi();
+            let kick = APICtrl.getKickSampler();
+            let snare = APICtrl.getSnareSampler();
+            let hat = APICtrl.getHatSampler();
+            let sampleArray = [kick, snare, hat];
+            await playSample(sampleArray, outputMidi);
+            let midiArray = APICtrl.getMidiArray();
+            console.log('Playing ' + midiArray[0] + ' and ' + midiArray[2] +'.');
+        } catch {
+            alert('Load Custom Samples!')
+        }
     });
     
     DOMInputs.formSelect.addEventListener('change', (event) => {
@@ -409,7 +425,7 @@ const APPController = (function(UICtrl, APICtrl) {
         } else {
             $('#' + event.target.id).next()[0].disabled = false;
         }
-        DOMInputs.play.disabled = true;
+        // DOMInputs.play.disabled = true;
     })
 
     return {
