@@ -20,7 +20,7 @@
                     <option value="custom">Custom</option>
                 </select>
                 <form action='/single' method='post' encType="multipart/form-data">
-                    <input class="form-control form-control-sm mb-1" id="kickUpload" type="file" name="filename" required>
+                    <input class="form-control form-control-sm mb-1" id="kick-file" type="file" name="filename" required>
                     <button type="submit" id="kick-upload" class="btn btn-outline-primary btn-sm mb-1">Upload</button>
                 </form> 
                 <a href="" id="kick-midi-download" class="btn btn-secondary btn-sm">Kick Midi</a>
@@ -48,6 +48,10 @@
         </div>
 
         <button type="button" id="play" class="btn btn-primary">Play</button>
+    </div>
+
+    <div id="status">
+
     </div>
 
     <footer class="mt-auto text-center">

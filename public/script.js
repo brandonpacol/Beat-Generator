@@ -76,6 +76,10 @@ const APIController = (function() {
         return data;       
     }
 
+    const _getCustomSample = (filename) => {
+        return '/uploads/' + filename; 
+    }
+
     return {
         setKickSampler(kickSampler) {
             return _setKickSampler(kickSampler);
@@ -115,6 +119,9 @@ const APIController = (function() {
         },
         getSampleList(drum) {
             return _getSampleList(drum);
+        },
+        getCustomSample(filename) {
+            return _getCustomSample(filename);
         }
     }
 })();
@@ -135,7 +142,8 @@ const UIController = (function() {
         setSamples: '#set-samples',
         play: '#play',
         formSelect: '#options',
-        kickUpload: '#kick-upload'
+        kickUpload: '#kick-upload',
+        kickFile: '#kick-file'
     }
 
     //public methods
@@ -153,7 +161,8 @@ const UIController = (function() {
                 setSamples: document.querySelector(DOMElements.setSamples),
                 play: document.querySelector(DOMElements.play),
                 formSelect: document.querySelector(DOMElements.formSelect),
-                kickUpload: document.querySelector(DOMElements.kickUpload)
+                kickUpload: document.querySelector(DOMElements.kickUpload),
+                kickFile: document.querySelector(DOMElements.kickFile)
             }
         },
 
@@ -264,7 +273,13 @@ const APPController = (function(UICtrl, APICtrl) {
         let selectedSnare = UICtrl.getSampleInput(DOMInputs.snares);
         let selectedHat = UICtrl.getSampleInput(DOMInputs.hats);
 
-        let kickFile = APICtrl.getSampleFile('kicks', selectedKick);
+        let kickFile;
+        if (selectedKick == 'custom') {
+            selectedKick = DOMInputs.kickFile.files[0].name;
+            kickFile = APICtrl.getCustomSample(selectedKick);
+        } else {
+            kickFile = APICtrl.getSampleFile('kicks', selectedKick);
+        }
         let snareFile = APICtrl.getSampleFile('snares', selectedSnare);
         let hatFile = APICtrl.getSampleFile('hats', selectedHat);
     
@@ -306,32 +321,15 @@ const APPController = (function(UICtrl, APICtrl) {
         setSamples();
     });
 
-    // DOMInputs.kickUpload.addEventListener('click', (e) => {
-    //     e.preventDefault();
-    //     $.ajax({
-    //         url: '/upload',
-    //         method: 'POST',
-    //         contentType: 'application/json',
-    //         data: JSON.stringify({ test: 'test' }),
-    //         success: function (res) {
-    //             console.log('noice')
-    //         }
-    //     })
-    // })
+    DOMInputs.kickUpload.addEventListener('click', (e) => {
+        e.preventDefault();
+        var xhttp = new XMLHttpRequest();
 
-    // $('#options').on('submit', async function(event) {
-    //     event.preventDefault();
-    //     $.ajax({
-    //         url: '/upload',
-    //         method: 'POST',
-    //         contentType: 'application/json',
-    //         data: JSON.stringify({ test: 'test' }),
-    //         success: function (res) {
-    //             console.log('noice')
-    //         }
-    //     })
-    //     await setSamples();
-    // })
+        xhttp.open("POST", "kickUpload")
+        var formData = new FormData()
+        formData.append('kick', document.getElementById('kick-file').files[0]) // since inputs allow multi files submission, therefore files are in array
+        xhttp.send(formData)
+    })
     
     DOMInputs.play.addEventListener('click', async () => {
         let outputMidi = APICtrl.getOutputMidi();

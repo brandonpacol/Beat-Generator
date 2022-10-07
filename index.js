@@ -64,13 +64,40 @@ app.post('/getSamples', jsonParser, (req, res) => {
     })
 })
 
-app.post('/single', (req, res) => {
+app.post('/kickUpload', (req, res) => {
     if (req.files) {
-        console.log(req.files);
+        let sampleFile = req.files.kick;
+        let uploadPath = __dirname + '/public/uploads/' + sampleFile.name;
+        sampleFile.mv(uploadPath);
+        console.log('uploaded kick')
     } else {
         console.log('error uploading')
     }
-    res.redirect('/');
+    res.end();
+})
+
+app.post('/snareUpload', (req, res) => {
+    if (req.files) {
+        let sampleFile = req.files.snare;
+        let uploadPath = __dirname + '/public/uploads/' + sampleFile.name;
+        sampleFile.mv(uploadPath);
+        console.log('uploaded Snare')
+    } else {
+        console.log('error uploading')
+    }
+    res.end();
+})
+
+app.post('/hatUpload', (req, res) => {
+    if (req.files) {
+        let sampleFile = req.files.hat;
+        let uploadPath = __dirname + '/public/uploads/' + sampleFile.name;
+        sampleFile.mv(uploadPath);
+        console.log('uploaded Hat')
+    } else {
+        console.log('error uploading')
+    }
+    res.end();
 })
 
 //page calls
