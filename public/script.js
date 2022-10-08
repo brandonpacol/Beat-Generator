@@ -403,17 +403,23 @@ const APPController = (function(UICtrl, APICtrl) {
         area.addEventListener('drop', (e) => {
             e.preventDefault();
             console.log('file dropped');
-            e.target.classList.remove('bg-primary');
+            area.classList.remove('bg-primary');
+        })
+
+        area.addEventListener('click', (e) => {
+            console.log(area.querySelector("input"));
+            area.querySelector("input").click();
         })
 
         area.addEventListener('dragover', (e) => {
             e.preventDefault();
             console.log('dragging over ' + e.target.id);
-            e.target.classList.add('bg-primary');
+            area.classList.add('bg-primary');
         })
 
         area.addEventListener('dragleave', (e) => {
             e.preventDefault();
+            area.classList.remove('bg-primary');
         })
     })
 
@@ -426,6 +432,7 @@ const APPController = (function(UICtrl, APICtrl) {
 
         e.target.firstChild.nextElementSibling.files = myFileList;
         console.log(e.target.firstChild.nextElementSibling.files);
+        DOMInputs.kickDrop.querySelector('h5').textContent = file.name;
         loadCustomKick();
     })
 
@@ -457,6 +464,7 @@ const APPController = (function(UICtrl, APICtrl) {
 
         DOMInputs.snareFile.files = myFileList;
         console.log(DOMInputs.snareFile.files);
+        DOMInputs.snareDrop.querySelector('h5').textContent = file.name;
         loadCustomSnare();
     })
 
@@ -486,6 +494,7 @@ const APPController = (function(UICtrl, APICtrl) {
 
         DOMInputs.hatFile.files = myFileList;
         console.log(DOMInputs.hatFile.files);
+        DOMInputs.hatDrop.querySelector('h5').textContent = file.name;
         loadCustomHat();
     })
 
