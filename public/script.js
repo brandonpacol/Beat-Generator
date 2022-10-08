@@ -147,7 +147,10 @@ const UIController = (function() {
         snareUpload: '#snare-upload',
         snareFile: '#snare-file',
         hatUpload: '#hat-upload',
-        hatFile: '#hat-file'
+        hatFile: '#hat-file',
+        kickDrop: '#kick-drop',
+        snareDrop: '#snare-drop',
+        hatDrop: '#hat-drop'
     }
 
     //public methods
@@ -170,7 +173,10 @@ const UIController = (function() {
                 snareUpload: document.querySelector(DOMElements.snareUpload),
                 snareFile: document.querySelector(DOMElements.snareFile),
                 hatUpload: document.querySelector(DOMElements.hatUpload),
-                hatFile: document.querySelector(DOMElements.hatFile)
+                hatFile: document.querySelector(DOMElements.hatFile),
+                kickDrop: document.querySelector(DOMElements.kickDrop),
+                snareDrop: document.querySelector(DOMElements.snareDrop),
+                hatDrop: document.querySelector(DOMElements.hatDrop)
             }
         },
 
@@ -235,7 +241,7 @@ const APPController = (function(UICtrl, APICtrl) {
     }
     
     const playSample = async (sampleArray, midi) => {
-        
+
         for (let i = 0; i < sampleArray.length; i++) {
             // load a midi file in the browser
             const now = Tone.now() + 0.5;
@@ -248,6 +254,7 @@ const APPController = (function(UICtrl, APICtrl) {
                     note.velocity
                 );
             });
+
         }
     }
     
@@ -346,6 +353,77 @@ const APPController = (function(UICtrl, APICtrl) {
     })
 
     DOMInputs.kickFile.addEventListener('change', () => {
+        loadCustomKick();
+    })
+
+    DOMInputs.snares.addEventListener('change', () => {
+        setSnareSample(DOMInputs.snares.value);
+    })
+
+    DOMInputs.snareFile.addEventListener('change', () => {
+        loadCustomSnare();
+    })
+
+    DOMInputs.hats.addEventListener('change', () => {
+        setHatSample(DOMInputs.hats.value);
+    })
+
+    DOMInputs.hatFile.addEventListener('change', () => {
+        loadCustomHat();
+    })
+    
+    DOMInputs.play.addEventListener('click', async () => {
+        try {
+            let outputMidi = APICtrl.getOutputMidi();
+            let kick = APICtrl.getKickSampler();
+            let snare = APICtrl.getSnareSampler();
+            let hat = APICtrl.getHatSampler();
+            let sampleArray = [kick, snare, hat];
+            await playSample(sampleArray, outputMidi);
+            let midiArray = APICtrl.getMidiArray();
+            console.log('Playing ' + midiArray[0] + ' and ' + midiArray[2] +'.');
+        } catch (err) {
+            alert('Load Custom Samples!')
+            console.log(err);
+        }
+    });
+    
+    DOMInputs.formSelect.addEventListener('change', (event) => {
+        if (event.target.value != 'custom') {
+            $('#' + event.target.id).next().children()[0].disabled = true
+        } else {
+            $('#' + event.target.id).next().children()[0].disabled = false;
+        }
+        // DOMInputs.play.disabled = true;
+    })
+
+    const dropArea = document.querySelectorAll('.drop-area');
+
+    dropArea.forEach((area) => {
+        area.addEventListener('drop', (e) => {
+            e.preventDefault();
+            console.log('file dropped');
+        })
+
+        area.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            console.log('dragging over ' + e.target.id);
+        })
+    })
+
+    DOMInputs.kickDrop.addEventListener('drop', (e) => {
+        const file = e.dataTransfer.files[0];
+            
+        let list = new DataTransfer();
+        list.items.add(file);
+        let myFileList = list.files;
+
+        e.target.firstChild.nextElementSibling.files = myFileList;
+        console.log(e.target.firstChild.nextElementSibling.files);
+        loadCustomKick();
+    })
+
+    const loadCustomKick = () => {
         const filesize = DOMInputs.kickFile.files[0].size / 1024 / 1024;
         if(filesize > 1) {
             alert('File exceeds 1MB.');
@@ -360,13 +438,23 @@ const APPController = (function(UICtrl, APICtrl) {
                 setKickSample(DOMInputs.kicks.value);
             }, 1000)
         }
+    }
+
+    DOMInputs.snareDrop.addEventListener('drop', (e) => {
+        e.preventDefault();
+        console.log('file dropped');
+        const file = e.dataTransfer.files[0];
+            
+        let list = new DataTransfer();
+        list.items.add(file);
+        let myFileList = list.files;
+
+        DOMInputs.snareFile.files = myFileList;
+        console.log(DOMInputs.snareFile.files);
+        loadCustomSnare();
     })
 
-    DOMInputs.snares.addEventListener('change', () => {
-        setSnareSample(DOMInputs.snares.value);
-    })
-
-    DOMInputs.snareFile.addEventListener('change', () => {
+    const loadCustomSnare = () => {
         const filesize = DOMInputs.snareFile.files[0].size / 1024 / 1024;
         if(filesize > 1) {
             alert('File exceeds 1MB.');
@@ -381,13 +469,21 @@ const APPController = (function(UICtrl, APICtrl) {
                 setSnareSample(DOMInputs.snares.value);
             }, 1000)
         }
+    }
+
+    DOMInputs.hatDrop.addEventListener('drop', (e) => {
+        const file = e.dataTransfer.files[0];
+            
+        let list = new DataTransfer();
+        list.items.add(file);
+        let myFileList = list.files;
+
+        DOMInputs.hatFile.files = myFileList;
+        console.log(DOMInputs.hatFile.files);
+        loadCustomHat();
     })
 
-    DOMInputs.hats.addEventListener('change', () => {
-        setHatSample(DOMInputs.hats.value);
-    })
-
-    DOMInputs.hatFile.addEventListener('change', () => {
+    const loadCustomHat = () => {
         const filesize = DOMInputs.hatFile.files[0].size / 1024 / 1024;
         if(filesize > 1) {
             alert('File exceeds 1MB.');
@@ -402,31 +498,7 @@ const APPController = (function(UICtrl, APICtrl) {
                 setHatSample(DOMInputs.hats.value);
             }, 1000)
         }
-    })
-    
-    DOMInputs.play.addEventListener('click', async () => {
-        try {
-            let outputMidi = APICtrl.getOutputMidi();
-            let kick = APICtrl.getKickSampler();
-            let snare = APICtrl.getSnareSampler();
-            let hat = APICtrl.getHatSampler();
-            let sampleArray = [kick, snare, hat];
-            await playSample(sampleArray, outputMidi);
-            let midiArray = APICtrl.getMidiArray();
-            console.log('Playing ' + midiArray[0] + ' and ' + midiArray[2] +'.');
-        } catch {
-            alert('Load Custom Samples!')
-        }
-    });
-    
-    DOMInputs.formSelect.addEventListener('change', (event) => {
-        if (event.target.value != 'custom') {
-            $('#' + event.target.id).next()[0].disabled = true;
-        } else {
-            $('#' + event.target.id).next()[0].disabled = false;
-        }
-        // DOMInputs.play.disabled = true;
-    })
+    }
 
     return {
         init() {

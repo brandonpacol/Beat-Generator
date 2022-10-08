@@ -8,6 +8,13 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
 </head>
+
+<style>
+    .drop-area {
+        height: 100px;
+    }
+</style>
+
 <body class="d-flex flex-column min-vh-100">
     <nav class="navbar navbar-light bg-light">
         <a class="navbar-brand mx-auto" href="#">Random Beat Generator</a>
@@ -19,21 +26,27 @@
                 <select name="kicks" id="kicks" class="form-select-sm mb-1">
                     <option value="custom">Custom</option>
                 </select>
-                <input class="form-control form-control-sm mb-1" id="kick-file" type="file" name="filename" accept="audio/mp3,audio/wav" required>
+                <div id="kick-drop" class="drop-area d-flex justify-content-center align-items-center border rounded">
+                    <input class="form-control form-control-sm mb-1" id="kick-file" type="file" name="filename" accept="audio/mp3,audio/wav" required>
+                </div>
                 <a href="" id="kick-midi-download" class="btn btn-secondary btn-sm">Kick Midi</a>
             </div>
             <div class="col-sm-4 d-flex flex-column mb-2">
                 <select name="snares" id="snares" class="form-select-sm mb-1">
                     <option value="custom">Custom</option>
                 </select>
-                <input class="form-control form-control-sm mb-1" id="snare-file" type="file" name="filename" required>
+                <div id="snare-drop" class="drop-area d-flex justify-content-center align-items-center border rounded">
+                    <input class="form-control form-control-sm mb-1" id="snare-file" type="file" name="filename" required>
+                </div>
                 <a href="midis/snares/snare.midi" id="snare-midi-download" class="btn btn-secondary btn-sm">Snare Midi</a>
             </div>
             <div class="col-sm-4 d-flex flex-column mb-2">
                 <select name="hats" id="hats" class="form-select-sm mb-1">
                     <option value="custom">Custom</option>
                 </select>
-                <input class="form-control form-control-sm mb-1" id="hat-file" type="file" name="filename" required>
+                <div id="hat-drop" class="drop-area d-flex justify-content-center align-items-center border rounded">
+                    <input class="form-control form-control-sm mb-1" id="hat-file" type="file" name="filename" required>
+                </div>
                 <a href="" id="hat-midi-download" class="btn btn-secondary btn-sm">Hat Midi</a>
             </div>
             <div class="mb-2">
