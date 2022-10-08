@@ -403,11 +403,17 @@ const APPController = (function(UICtrl, APICtrl) {
         area.addEventListener('drop', (e) => {
             e.preventDefault();
             console.log('file dropped');
+            e.target.classList.remove('bg-primary');
         })
 
         area.addEventListener('dragover', (e) => {
             e.preventDefault();
             console.log('dragging over ' + e.target.id);
+            e.target.classList.add('bg-primary');
+        })
+
+        area.addEventListener('dragleave', (e) => {
+            e.preventDefault();
         })
     })
 
