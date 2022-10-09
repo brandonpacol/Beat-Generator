@@ -4,28 +4,29 @@ const APIController = (function() {
     let midiArray, outputMidi, kick, snare, hat;
 
     // private methods
-    const _setKickSampler = (kickSampler) => {
-        kick = kickSampler;
+    const _setSampler = (sampler, drum) => {
+        switch(drum) {
+            case 'kick':
+                kick = sampler;
+                break;
+            case 'snare':
+                snare = sampler;
+                break;
+            case 'hat':
+                hat = sampler;
+                break;
+        }
     }
 
-    const _getKickSampler = () => {
-        return kick;
-    }
-
-    const _setSnareSampler = (snareSampler) => {
-        snare = snareSampler;
-    }
-
-    const _getSnareSampler = () => {
-        return snare;
-    }
-
-    const _setHatSampler = (hatSampler) => {
-        hat = hatSampler;
-    }
-
-    const _getHatSampler = () => {
-        return hat;
+    const _getSampler = (drum) => {
+        switch(drum) {
+            case 'kick':
+                return kick;
+            case 'snare':
+                return snare;
+            case 'hat':
+                return hat;
+        }
     }
 
     const _setMidiArray = (newMidiArray) => {
@@ -44,7 +45,7 @@ const APIController = (function() {
         return outputMidi;
     }
 
-    const _getMidi = async (drum) => {
+    const _getMidi = async (drum, bpm) => {
         const result = await fetch('/getMidi', {
             method: "POST",
             headers: {
@@ -52,7 +53,8 @@ const APIController = (function() {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              drum : drum
+              drum : drum,
+              bpm : bpm
             })});
         const data = await result.json();
         return data;
@@ -76,24 +78,16 @@ const APIController = (function() {
         return data;       
     }
 
+    const _getCustomSample = (filename) => {
+        return '/uploads/' + filename; 
+    }
+
     return {
-        setKickSampler(kickSampler) {
-            return _setKickSampler(kickSampler);
+        setSampler(sampler, drum) {
+            return _setSampler(sampler, drum)
         },
-        getKickSampler() {
-            return _getKickSampler();
-        },
-        setSnareSampler(snareSampler) {
-            return _setSnareSampler(snareSampler);
-        },
-        getSnareSampler() {
-            return _getSnareSampler();
-        },
-        setHatSampler(hatSampler) {
-            return _setHatSampler(hatSampler);
-        },
-        getHatSampler() {
-            return _getHatSampler();
+        getSampler(drum) {
+            return _getSampler(drum);
         },
         setMidiArray(newMidiArray) {
             return _setMidiArray(newMidiArray);
@@ -107,14 +101,17 @@ const APIController = (function() {
         getOutputMidi() {
             return _getOutputMidi();
         },
-        getMidi(drum) {
-            return _getMidi(drum);
+        getMidi(drum, bpm) {
+            return _getMidi(drum, bpm);
         },
         getSampleFile(drum, filename) {
             return _getSampleFile(drum, filename);
         },
         getSampleList(drum) {
             return _getSampleList(drum);
+        },
+        getCustomSample(filename) {
+            return _getCustomSample(filename);
         }
     }
 })();
@@ -133,7 +130,16 @@ const UIController = (function() {
         hats: '#hats',
         generateBeat: '#generate-beat',
         setSamples: '#set-samples',
-        play: '#play'
+        play: '#play',
+        formSelect: '#options',
+        kickFile: '#kick-file',
+        snareFile: '#snare-file',
+        hatFile: '#hat-file',
+        kickDrop: '#kick-drop',
+        snareDrop: '#snare-drop',
+        hatDrop: '#hat-drop',
+        bpmSelect: '#bpm-select',
+        dropArea: '.drop-area'
     }
 
     //public methods
@@ -149,22 +155,27 @@ const UIController = (function() {
                 hats: document.querySelector(DOMElements.hats),
                 generateBeat: document.querySelector(DOMElements.generateBeat),
                 setSamples: document.querySelector(DOMElements.setSamples),
-                play: document.querySelector(DOMElements.play)
+                play: document.querySelector(DOMElements.play),
+                formSelect: document.querySelector(DOMElements.formSelect),
+                kickUpload: document.querySelector(DOMElements.kickUpload),
+                kickFile: document.querySelector(DOMElements.kickFile),
+                snareUpload: document.querySelector(DOMElements.snareUpload),
+                snareFile: document.querySelector(DOMElements.snareFile),
+                hatUpload: document.querySelector(DOMElements.hatUpload),
+                hatFile: document.querySelector(DOMElements.hatFile),
+                kickDrop: document.querySelector(DOMElements.kickDrop),
+                snareDrop: document.querySelector(DOMElements.snareDrop),
+                hatDrop: document.querySelector(DOMElements.hatDrop),
+                bpmSelect: document.querySelector(DOMElements.bpmSelect),
+                dropArea: document.querySelectorAll(DOMElements.dropArea)
             }
-        },
-
-        changeDownload(domElement, midiFile) {
-            domElement.href = midiFile;
-        },
-
-        getSampleInput(domElement) {
-            return domElement.value;
         },
 
         createListOptions(domElement, filename, label) {
             const html = `<option value="${filename}">${label}</option>`
             domElement.insertAdjacentHTML('beforeend', html);
         }
+        
     }
 
 })();
@@ -205,7 +216,7 @@ const APPController = (function(UICtrl, APICtrl) {
     }
     
     const playSample = async (sampleArray, midi) => {
-        
+
         for (let i = 0; i < sampleArray.length; i++) {
             // load a midi file in the browser
             const now = Tone.now() + 0.5;
@@ -218,18 +229,16 @@ const APPController = (function(UICtrl, APICtrl) {
                     note.velocity
                 );
             });
+
         }
     }
     
-    // generated beat functions
-    const getRandomInt = (max) => {
-        return Math.floor(Math.random() * max);
-    }
-
     const generateBeat = async () => {    
-        let kickMidiFile = await APICtrl.getMidi('kicks');
-        let snareMidiFile = await APICtrl.getMidi('snares');
-        let hatMidiFile = await APICtrl.getMidi('hats');
+        let bpm = DOMInputs.bpmSelect.value;
+
+        let kickMidiFile = await APICtrl.getMidi('kicks', bpm);
+        let snareMidiFile = await APICtrl.getMidi('snares', bpm);
+        let hatMidiFile = await APICtrl.getMidi('hats', bpm);
 
         kickMidiFile = kickMidiFile.midi;
         snareMidiFile = snareMidiFile.midi;
@@ -241,69 +250,167 @@ const APPController = (function(UICtrl, APICtrl) {
         APICtrl.setOutputMidi(outputMidi);
         console.log('output midi: ' + outputMidi.tracks);
     
-        UICtrl.changeDownload(DOMInputs.kickMidiDownload, kickMidiFile);
-        UICtrl.changeDownload(DOMInputs.snareMidiDownload, snareMidiFile);
-        UICtrl.changeDownload(DOMInputs.hatMidiDownload, hatMidiFile);
-    }
-
-    const setSamples = () => {
-        let selectedKick = UICtrl.getSampleInput(DOMInputs.kicks);
-        let selectedSnare = UICtrl.getSampleInput(DOMInputs.snares);
-        let selectedHat = UICtrl.getSampleInput(DOMInputs.hats);
-
-        let kickFile = APICtrl.getSampleFile('kicks', selectedKick);
-        let snareFile = APICtrl.getSampleFile('snares', selectedSnare);
-        let hatFile = APICtrl.getSampleFile('hats', selectedHat);
-    
-        let kick = generateSample(kickFile);
-        let snare = generateSample(snareFile);
-        let hat = generateSample(hatFile);
-
-        APICtrl.setKickSampler(kick);
-        APICtrl.setSnareSampler(snare);
-        APICtrl.setHatSampler(hat);
+        DOMInputs.kickMidiDownload.href = kickMidiFile;
+        DOMInputs.snareMidiDownload.href = snareMidiFile;
+        DOMInputs.hatMidiDownload.href = hatMidiFile;
     }
 
     const loadinitialPage = async () => {
-        let kickSamples = await APICtrl.getSampleList('kicks');
+        let kickSamples = await APICtrl.getSampleList('kick');
         for (let i = 0; i < kickSamples.length; i++) {
             UICtrl.createListOptions(DOMInputs.kicks, kickSamples[i], 'Kick ' + (i + 1));
         }
 
-        let snareSamples = await APICtrl.getSampleList('snares');
+        let snareSamples = await APICtrl.getSampleList('snare');
         for (let i = 0; i < snareSamples.length; i++) {
             UICtrl.createListOptions(DOMInputs.snares, snareSamples[i], 'Snare ' + (i + 1));
         }
 
-        let hatSamples = await APICtrl.getSampleList('hats');
+        let hatSamples = await APICtrl.getSampleList('hat');
         for (let i = 0; i < hatSamples.length; i++) {
             UICtrl.createListOptions(DOMInputs.hats, hatSamples[i], 'Hat ' + (i + 1));
         }
 
         await generateBeat();
-        await setSamples();
     }
     
     // DOM functions
     DOMInputs.generateBeat.addEventListener('click', async () => {
-        generateBeat();
+        await generateBeat();
+    })
+
+    document.querySelectorAll('.drum-select').forEach((select) => {
+        select.addEventListener('change', () => {
+            let selectedSample = select.value;
+            let drum = select.name;
+            let input = select.parentElement.querySelector('input');
+            let sampleFile;
+            if (selectedSample == 'custom') {
+                if (input.files.length > 0) {
+                    console.log(`custom ${drum} is loaded`);
+                    selectedSample = input.files[0].name;
+                    sampleFile = APICtrl.getCustomSample(selectedSample);
+                }
+            } else {
+                sampleFile = APICtrl.getSampleFile(drum, selectedSample);
+            }
+            let sample = generateSample(sampleFile);
+            APICtrl.setSampler(sample, drum);
+        })
     })
     
-    DOMInputs.setSamples.addEventListener('click', () => {
-        setSamples();
-    });  
-    
     DOMInputs.play.addEventListener('click', async () => {
-        let outputMidi = APICtrl.getOutputMidi();
-        let kick = APICtrl.getKickSampler();
-        let snare = APICtrl.getSnareSampler();
-        let hat = APICtrl.getHatSampler();
-        let sampleArray = [kick, snare, hat];
-        await playSample(sampleArray, outputMidi);
-        let midiArray = APICtrl.getMidiArray();
-        console.log('Playing ' + midiArray[0] + ' and ' + midiArray[2] +'.');
+        try {
+            let outputMidi = APICtrl.getOutputMidi();
+            let kick = APICtrl.getSampler('kick');
+            let snare = APICtrl.getSampler('snare');
+            let hat = APICtrl.getSampler('hat');
+            let sampleArray = [kick, snare, hat];
+            await playSample(sampleArray, outputMidi);
+            let midiArray = APICtrl.getMidiArray();
+            console.log('Playing ' + midiArray[0] + ' and ' + midiArray[2] +'.');
+        } catch (err) {
+            alert('Load Custom Samples!')
+            console.log(err);
+        }
     });
     
+    DOMInputs.formSelect.addEventListener('change', (event) => {
+        if (event.target.value != 'custom') {
+            $('#' + event.target.id).next().children()[0].disabled = true
+        } else {
+            $('#' + event.target.id).next().children()[0].disabled = false;
+        }
+    })
+
+    DOMInputs.dropArea.forEach((area) => {
+        area.addEventListener('drop', (e) => {
+            e.preventDefault();
+            console.log('file dropped');
+            area.classList.remove('bg-primary');
+
+            const file = e.dataTransfer.files[0];
+            const filesize = file.size / 1024 / 1024;
+
+            if (file.type == 'audio/wav' || file.type == 'audio/mp3') {
+                if(filesize < 1) {
+                    let list = new DataTransfer();
+                    list.items.add(file);
+                    let myFileList = list.files;
+        
+                    let input = area.querySelector('input');
+                    input.files = myFileList;
+                    console.log(input.files);
+                    area.querySelector('h5').textContent = file.name;
+
+                    const drum = input.getAttribute('drum');
+
+                    var xhttp = new XMLHttpRequest();
+            
+                    xhttp.open('POST', 'sampleUpload')
+                    var formData = new FormData()
+                    formData.append('sample', input.files[0]);
+                    xhttp.send(formData);
+                    setTimeout(function(){
+                        let name = input.files[0].name;
+                        let sampleFile = APICtrl.getCustomSample(name);
+                        let sample = generateSample(sampleFile);
+                        APICtrl.setSampler(sample, drum);
+                    }, 1000)
+                    
+                    if (area.querySelector('p')) {
+                        area.querySelector('p').remove();
+                    }
+                } else {
+                    alert('File exceeds 1MB.');
+                }
+            } else {
+                alert('Please upload .wav or .mp3 files.')
+            }
+        })
+
+        area.addEventListener('click', () => {
+            area.querySelector("input").click();
+        })
+
+        area.querySelector('input').addEventListener('change', () => {
+            let input = area.querySelector('input');
+            area.querySelector('h5').textContent = input.files[0].name;
+
+            const filesize = input.files[0].size / 1024 / 1024;
+
+            if(filesize < 1) {
+                const drum = input.getAttribute('drum');
+
+                var xhttp = new XMLHttpRequest();
+        
+                xhttp.open('POST', 'sampleUpload')
+                var formData = new FormData()
+                formData.append('sample', input.files[0]);
+                xhttp.send(formData);
+                setTimeout(function(){
+                    let name = input.files[0].name;
+                    let sampleFile = APICtrl.getCustomSample(name);
+                    let sample = generateSample(sampleFile);
+                    APICtrl.setSampler(sample, drum);
+                }, 1000)
+            } else {
+                alert('File exceeds 1MB.');
+            }
+
+        })
+
+        area.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            area.classList.add('bg-primary');
+        })
+
+        area.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            area.classList.remove('bg-primary');
+        })
+    })
+
     return {
         init() {
             loadinitialPage();

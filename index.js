@@ -7,12 +7,15 @@ const path = require('path');
 const app = express();
 const port = 3000;
 var bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
+app.use(fileUpload());
 
 // create application/json parser
 var jsonParser = bodyParser.json();
 
 app.use(express.static('public'))
 app.use('/media', express.static('media'));
+
 
 app.listen(port, () => {
     console.log(`Example app listening on port http://localhost:${port}`)
@@ -21,7 +24,8 @@ app.listen(port, () => {
 app.post('/getMidi', jsonParser, (req, res) => {
     const body = req.body;
     const drum = body.drum;
-    const directory = '/media/midis/' + drum + '/';
+    const bpm = body.bpm;
+    const directory = `/media/midis/${bpm}/${drum}/`;
     const mediaPath = path.join(__dirname, directory);
     fs.readdir(mediaPath, (err, files) => {
         if (err) {
@@ -42,7 +46,7 @@ app.post('/getMidi', jsonParser, (req, res) => {
 app.post('/getSamples', jsonParser, (req, res) => {
     const body = req.body;
     const drum = body.drum;
-    const directory = '/media/samples/' + drum + '/';
+    const directory = `/media/samples/${drum}/`;
     const mediaPath = path.join(__dirname, directory);
     let sampleArray = [];
     fs.readdir(mediaPath, (err, files) => {
@@ -55,9 +59,25 @@ app.post('/getSamples', jsonParser, (req, res) => {
                     sampleArray.push(file);
                 }
             })
-            console.log(sampleArray);
             res.json(sampleArray);
             res.end();
         }    
     })
+})
+
+app.post('/sampleUpload', (req, res) => {
+    if (req.files) {
+        let sampleFile = req.files.sample;
+        let uploadPath = __dirname + '/public/uploads/' + sampleFile.name;
+        sampleFile.mv(uploadPath);
+        console.log('uploaded ' + sampleFile.name);
+    } else {
+        console.log('error uploading sample.');
+        res.status(400);
+    }
+})
+
+//page calls
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html')
 })

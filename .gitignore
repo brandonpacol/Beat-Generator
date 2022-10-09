@@ -5,6 +5,8 @@
 # Folders #
 ###########
 media/
+public/uploads/
+.vscode/
 
 # Compiled source #
 ###################
