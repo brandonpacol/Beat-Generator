@@ -4,28 +4,29 @@ const APIController = (function() {
     let midiArray, outputMidi, kick, snare, hat;
 
     // private methods
-    const _setKickSampler = (kickSampler) => {
-        kick = kickSampler;
+    const _setSampler = (sampler, drum) => {
+        switch(drum) {
+            case 'kick':
+                kick = sampler;
+                break;
+            case 'snare':
+                snare = sampler;
+                break;
+            case 'hat':
+                hat = sampler;
+                break;
+        }
     }
 
-    const _getKickSampler = () => {
-        return kick;
-    }
-
-    const _setSnareSampler = (snareSampler) => {
-        snare = snareSampler;
-    }
-
-    const _getSnareSampler = () => {
-        return snare;
-    }
-
-    const _setHatSampler = (hatSampler) => {
-        hat = hatSampler;
-    }
-
-    const _getHatSampler = () => {
-        return hat;
+    const _getSampler = (drum) => {
+        switch(drum) {
+            case 'kick':
+                return kick;
+            case 'snare':
+                return snare;
+            case 'hat':
+                return hat;
+        }
     }
 
     const _setMidiArray = (newMidiArray) => {
@@ -82,6 +83,12 @@ const APIController = (function() {
     }
 
     return {
+        setSampler(sampler, drum) {
+            return _setSampler(sampler, drum)
+        },
+        getSampler(drum) {
+            return _getSampler(drum);
+        },
         setKickSampler(kickSampler) {
             return _setKickSampler(kickSampler);
         },
@@ -143,16 +150,14 @@ const UIController = (function() {
         setSamples: '#set-samples',
         play: '#play',
         formSelect: '#options',
-        kickUpload: '#kick-upload',
-        kickFile: '#kick-file',
-        snareUpload: '#snare-upload',
-        snareFile: '#snare-file',
-        hatUpload: '#hat-upload',
-        hatFile: '#hat-file',
+        kickFile: '#kickUpload',
+        snareFile: '#snareUpload',
+        hatFile: '#hatUpload',
         kickDrop: '#kick-drop',
         snareDrop: '#snare-drop',
         hatDrop: '#hat-drop',
-        bpmSelect: '#bpm-select'
+        bpmSelect: '#bpm-select',
+        dropArea: '.drop-area'
     }
 
     //public methods
@@ -179,7 +184,8 @@ const UIController = (function() {
                 kickDrop: document.querySelector(DOMElements.kickDrop),
                 snareDrop: document.querySelector(DOMElements.snareDrop),
                 hatDrop: document.querySelector(DOMElements.hatDrop),
-                bpmSelect: document.querySelector(DOMElements.bpmSelect)
+                bpmSelect: document.querySelector(DOMElements.bpmSelect),
+                dropArea: document.querySelectorAll(DOMElements.dropArea)
             }
         },
 
@@ -284,63 +290,18 @@ const APPController = (function(UICtrl, APICtrl) {
         UICtrl.changeDownload(DOMInputs.hatMidiDownload, hatMidiFile);
     }
 
-    const setKickSample = (selectedKick) => {
-        let kickFile;
-        if (selectedKick == 'custom') {
-            if (DOMInputs.kickFile.files.length > 0) {
-                console.log('custom kick is loaded');
-                selectedKick = DOMInputs.kickFile.files[0].name;
-                kickFile = APICtrl.getCustomSample(selectedKick);
-            }
-        } else {
-            kickFile = APICtrl.getSampleFile('kicks', selectedKick);
-        }
-        let kick = generateSample(kickFile);
-        APICtrl.setKickSampler(kick);
-    }
-
-    const setSnareSample = (selectedSnare) => {
-        let snareFile;
-        if (selectedSnare == 'custom') {
-            if (DOMInputs.snareFile.files.length > 0) {
-                console.log('custom snare is loaded');
-                selectedSnare = DOMInputs.snareFile.files[0].name;
-                snareFile = APICtrl.getCustomSample(selectedSnare);
-            }
-        } else {
-            snareFile = APICtrl.getSampleFile('snares', selectedSnare);
-        }
-        let snare = generateSample(snareFile);
-        APICtrl.setSnareSampler(snare);
-    }
-
-    const setHatSample = (selectedHat) => {
-        let hatFile;
-        if (selectedHat == 'custom') {
-            if (DOMInputs.hatFile.files.length > 0) {
-                console.log('custom hat is loaded');
-                selectedHat = DOMInputs.hatFile.files[0].name;
-                hatFile = APICtrl.getCustomSample(selectedHat);
-            }
-        } else {
-            hatFile = APICtrl.getSampleFile('hats', selectedHat);
-        }
-        let hat = generateSample(hatFile);
-        APICtrl.setHatSampler(hat);
-    }
-
     const loadinitialPage = async () => {
-        let kickSamples = await APICtrl.getSampleList('kicks');
+        let kickSamples = await APICtrl.getSampleList('kick');
         for (let i = 0; i < kickSamples.length; i++) {
             UICtrl.createListOptions(DOMInputs.kicks, kickSamples[i], 'Kick ' + (i + 1));
         }
 
-        let snareSamples = await APICtrl.getSampleList('snares');
+        let snareSamples = await APICtrl.getSampleList('snare');
         for (let i = 0; i < snareSamples.length; i++) {
             UICtrl.createListOptions(DOMInputs.snares, snareSamples[i], 'Snare ' + (i + 1));
         }
 
-        let hatSamples = await APICtrl.getSampleList('hats');
+        let hatSamples = await APICtrl.getSampleList('hat');
         for (let i = 0; i < hatSamples.length; i++) {
             UICtrl.createListOptions(DOMInputs.hats, hatSamples[i], 'Hat ' + (i + 1));
         }
@@ -353,36 +314,32 @@ const APPController = (function(UICtrl, APICtrl) {
         await generateBeat();
     })
 
-    DOMInputs.kicks.addEventListener('change', () => {
-        setKickSample(DOMInputs.kicks.value);
-    })
-
-    DOMInputs.kickFile.addEventListener('change', () => {
-        loadCustomKick();
-    })
-
-    DOMInputs.snares.addEventListener('change', () => {
-        setSnareSample(DOMInputs.snares.value);
-    })
-
-    DOMInputs.snareFile.addEventListener('change', () => {
-        loadCustomSnare();
-    })
-
-    DOMInputs.hats.addEventListener('change', () => {
-        setHatSample(DOMInputs.hats.value);
-    })
-
-    DOMInputs.hatFile.addEventListener('change', () => {
-        loadCustomHat();
+    document.querySelectorAll('.drum-select').forEach((select) => {
+        select.addEventListener('change', () => {
+            let selectedSample = select.value;
+            let drum = select.name;
+            let input = select.parentElement.querySelector('input');
+            let sampleFile;
+            if (selectedSample == 'custom') {
+                if (input.files.length > 0) {
+                    console.log(`custom ${drum} is loaded`);
+                    selectedSample = input.files[0].name;
+                    sampleFile = APICtrl.getCustomSample(selectedSample);
+                }
+            } else {
+                sampleFile = APICtrl.getSampleFile(drum, selectedSample);
+            }
+            let sample = generateSample(sampleFile);
+            APICtrl.setSampler(sample, drum);
+        })
     })
     
     DOMInputs.play.addEventListener('click', async () => {
         try {
             let outputMidi = APICtrl.getOutputMidi();
-            let kick = APICtrl.getKickSampler();
-            let snare = APICtrl.getSnareSampler();
-            let hat = APICtrl.getHatSampler();
+            let kick = APICtrl.getSampler('kick');
+            let snare = APICtrl.getSampler('snare');
+            let hat = APICtrl.getSampler('hat');
             let sampleArray = [kick, snare, hat];
             await playSample(sampleArray, outputMidi);
             let midiArray = APICtrl.getMidiArray();
@@ -399,29 +356,81 @@ const APPController = (function(UICtrl, APICtrl) {
         } else {
             $('#' + event.target.id).next().children()[0].disabled = false;
         }
-        // DOMInputs.play.disabled = true;
     })
 
-    const dropArea = document.querySelectorAll('.drop-area');
-
-    dropArea.forEach((area) => {
+    DOMInputs.dropArea.forEach((area) => {
         area.addEventListener('drop', (e) => {
             e.preventDefault();
             console.log('file dropped');
             area.classList.remove('bg-primary');
             if (area.querySelector('p')) {
                 area.querySelector('p').remove();
-            };
+            }
+
+            const file = e.dataTransfer.files[0];
+            let list = new DataTransfer();
+            list.items.add(file);
+            let myFileList = list.files;
+
+            let input = area.querySelector('input');
+            input.files = myFileList;
+            console.log(input.files);
+            area.querySelector('h5').textContent = file.name;
+
+            const filesize = input.files[0].size / 1024 / 1024;
+            const call = input.id;
+            const drum = input.getAttribute('drum');
+
+            if(filesize > 1) {
+                alert('File exceeds 1MB.');
+            } else {
+                var xhttp = new XMLHttpRequest();
+        
+                xhttp.open('POST', call)
+                var formData = new FormData()
+                formData.append(drum, input.files[0]);
+                xhttp.send(formData);
+                setTimeout(function(){
+                    let name = input.files[0].name;
+                    let sampleFile = APICtrl.getCustomSample(name);
+                    let sample = generateSample(sampleFile);
+                    APICtrl.setSampler(sample, drum);
+                }, 1000)
+            }
         })
 
-        area.addEventListener('click', (e) => {
-            console.log(area.querySelector("input"));
+        area.addEventListener('click', () => {
             area.querySelector("input").click();
+        })
+
+        area.querySelector('input').addEventListener('change', () => {
+            let input = area.querySelector('input');
+            area.querySelector('h5').textContent = input.files[0].name;
+
+            const filesize = input.files[0].size / 1024 / 1024;
+            const call = input.id;
+            const drum = input.getAttribute('drum');
+
+            if(filesize > 1) {
+                alert('File exceeds 1MB.');
+            } else {
+                var xhttp = new XMLHttpRequest();
+        
+                xhttp.open('POST', call)
+                var formData = new FormData()
+                formData.append(drum, input.files[0]);
+                xhttp.send(formData);
+                setTimeout(function(){
+                    let name = input.files[0].name;
+                    let sampleFile = APICtrl.getCustomSample(name);
+                    let sample = generateSample(sampleFile);
+                    APICtrl.setSampler(sample, drum);
+                }, 1000)
+            }
         })
 
         area.addEventListener('dragover', (e) => {
             e.preventDefault();
-            console.log('dragging over ' + e.target.id);
             area.classList.add('bg-primary');
         })
 
@@ -430,98 +439,6 @@ const APPController = (function(UICtrl, APICtrl) {
             area.classList.remove('bg-primary');
         })
     })
-
-    DOMInputs.kickDrop.addEventListener('drop', (e) => {
-        const file = e.dataTransfer.files[0];
-            
-        let list = new DataTransfer();
-        list.items.add(file);
-        let myFileList = list.files;
-
-        DOMInputs.kickFile.files = myFileList;
-        console.log(DOMInputs.kickFile.files);
-        DOMInputs.kickDrop.querySelector('h5').textContent = file.name;
-        loadCustomKick();
-    })
-
-    const loadCustomKick = () => {
-        const filesize = DOMInputs.kickFile.files[0].size / 1024 / 1024;
-        if(filesize > 1) {
-            alert('File exceeds 1MB.');
-        } else {
-            var xhttp = new XMLHttpRequest();
-    
-            xhttp.open("POST", "kickUpload")
-            var formData = new FormData()
-            formData.append('kick', DOMInputs.kickFile.files[0]);
-            xhttp.send(formData);
-            setTimeout(function(){
-                setKickSample(DOMInputs.kicks.value);
-            }, 1000)
-        }
-    }
-
-    DOMInputs.snareDrop.addEventListener('drop', (e) => {
-        e.preventDefault();
-        console.log('file dropped');
-        const file = e.dataTransfer.files[0];
-            
-        let list = new DataTransfer();
-        list.items.add(file);
-        let myFileList = list.files;
-
-        DOMInputs.snareFile.files = myFileList;
-        console.log(DOMInputs.snareFile.files);
-        DOMInputs.snareDrop.querySelector('h5').textContent = file.name;
-        loadCustomSnare();
-    })
-
-    const loadCustomSnare = () => {
-        const filesize = DOMInputs.snareFile.files[0].size / 1024 / 1024;
-        if(filesize > 1) {
-            alert('File exceeds 1MB.');
-        } else {
-            var xhttp = new XMLHttpRequest();
-
-            xhttp.open("POST", "snareUpload")
-            var formData = new FormData()
-            formData.append('snare', DOMInputs.snareFile.files[0]);
-            xhttp.send(formData);
-            setTimeout(function(){
-                setSnareSample(DOMInputs.snares.value);
-            }, 1000)
-        }
-    }
-
-    DOMInputs.hatDrop.addEventListener('drop', (e) => {
-        const file = e.dataTransfer.files[0];
-            
-        let list = new DataTransfer();
-        list.items.add(file);
-        let myFileList = list.files;
-
-        DOMInputs.hatFile.files = myFileList;
-        console.log(DOMInputs.hatFile.files);
-        DOMInputs.hatDrop.querySelector('h5').textContent = file.name;
-        loadCustomHat();
-    })
-
-    const loadCustomHat = () => {
-        const filesize = DOMInputs.hatFile.files[0].size / 1024 / 1024;
-        if(filesize > 1) {
-            alert('File exceeds 1MB.');
-        } else {
-            var xhttp = new XMLHttpRequest();
-
-            xhttp.open("POST", "hatUpload")
-            var formData = new FormData()
-            formData.append('hat', DOMInputs.hatFile.files[0]);
-            xhttp.send(formData);
-            setTimeout(function(){
-                setHatSample(DOMInputs.hats.value);
-            }, 1000)
-        }
-    }
 
     return {
         init() {

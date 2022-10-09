@@ -44,33 +44,33 @@
     <div class="container mt-3 text-center">
         <div class="row mb-2" id="options">
             <div class="col-sm-4 d-flex flex-column mb-2">
-                <select name="kicks" id="kicks" class="form-select-sm mb-1">
+                <select name="kick" id="kicks" class="drum-select form-select-sm mb-1">
                     <option value="custom">Custom</option>
                 </select>
                 <div id="kick-drop" class="drop-area d-flex justify-content-center flex-column border rounded mb-1">
-                    <input class="form-control form-control-sm mb-1" id="kick-file" type="file" name="filename" style="display: none;" required>
+                    <input class="form-control form-control-sm mb-1" id="kickUpload" drum="kick" type="file" name="filename" style="display: none;" required>
                     <h5>Upload Kick</h5>
                     <p>Click or drag and drop to upload</p>
                 </div>
                 <a href="" id="kick-midi-download" class="btn btn-secondary btn-sm">Kick Midi</a>
             </div>
             <div class="col-sm-4 d-flex flex-column mb-2">
-                <select name="snares" id="snares" class="form-select-sm mb-1">
+                <select name="snare" id="snares" class="drum-select form-select-sm mb-1">
                     <option value="custom">Custom</option>
                 </select>
                 <div id="snare-drop" class="drop-area d-flex justify-content-center flex-column border rounded mb-1">
-                    <input class="form-control form-control-sm mb-1" id="snare-file" type="file" name="filename" style="display: none;" required>
+                    <input class="form-control form-control-sm mb-1" id="snareUpload" drum="snare" type="file" name="filename" style="display: none;" required>
                     <h5>Upload Snare</h5>
                     <p>Click or drag and drop to upload</p>
                 </div>
                 <a href="midis/snares/snare.midi" id="snare-midi-download" class="btn btn-secondary btn-sm">Snare Midi</a>
             </div>
             <div class="col-sm-4 d-flex flex-column mb-2">
-                <select name="hats" id="hats" class="form-select-sm mb-1">
+                <select name="hat" id="hats" class="drum-select form-select-sm mb-1">
                     <option value="custom">Custom</option>
                 </select>
                 <div id="hat-drop" class="drop-area d-flex justify-content-center flex-column border rounded mb-1">
-                    <input class="form-control form-control-sm mb-1" id="hat-file" type="file" name="filename" style="display: none;" required>
+                    <input class="form-control form-control-sm mb-1" id="hatUpload" drum="hat" type="file" name="filename" style="display: none;" required>
                     <h5>Upload Hat</h5>
                     <p>Click or drag and drop to upload</p>
                 </div>
