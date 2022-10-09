@@ -24,7 +24,8 @@ app.listen(port, () => {
 app.post('/getMidi', jsonParser, (req, res) => {
     const body = req.body;
     const drum = body.drum;
-    const directory = '/media/midis/' + drum + '/';
+    const bpm = body.bpm;
+    const directory = `/media/midis/${bpm}/${drum}/`;
     const mediaPath = path.join(__dirname, directory);
     fs.readdir(mediaPath, (err, files) => {
         if (err) {

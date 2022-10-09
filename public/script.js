@@ -44,7 +44,7 @@ const APIController = (function() {
         return outputMidi;
     }
 
-    const _getMidi = async (drum) => {
+    const _getMidi = async (drum, bpm) => {
         const result = await fetch('/getMidi', {
             method: "POST",
             headers: {
@@ -52,7 +52,8 @@ const APIController = (function() {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              drum : drum
+              drum : drum,
+              bpm : bpm
             })});
         const data = await result.json();
         return data;
@@ -111,8 +112,8 @@ const APIController = (function() {
         getOutputMidi() {
             return _getOutputMidi();
         },
-        getMidi(drum) {
-            return _getMidi(drum);
+        getMidi(drum, bpm) {
+            return _getMidi(drum, bpm);
         },
         getSampleFile(drum, filename) {
             return _getSampleFile(drum, filename);
@@ -150,7 +151,8 @@ const UIController = (function() {
         hatFile: '#hat-file',
         kickDrop: '#kick-drop',
         snareDrop: '#snare-drop',
-        hatDrop: '#hat-drop'
+        hatDrop: '#hat-drop',
+        bpmSelect: '#bpm-select'
     }
 
     //public methods
@@ -176,7 +178,8 @@ const UIController = (function() {
                 hatFile: document.querySelector(DOMElements.hatFile),
                 kickDrop: document.querySelector(DOMElements.kickDrop),
                 snareDrop: document.querySelector(DOMElements.snareDrop),
-                hatDrop: document.querySelector(DOMElements.hatDrop)
+                hatDrop: document.querySelector(DOMElements.hatDrop),
+                bpmSelect: document.querySelector(DOMElements.bpmSelect)
             }
         },
 
@@ -260,9 +263,11 @@ const APPController = (function(UICtrl, APICtrl) {
     
     // generated beat functions
     const generateBeat = async () => {    
-        let kickMidiFile = await APICtrl.getMidi('kicks');
-        let snareMidiFile = await APICtrl.getMidi('snares');
-        let hatMidiFile = await APICtrl.getMidi('hats');
+        let bpm = DOMInputs.bpmSelect.value;
+
+        let kickMidiFile = await APICtrl.getMidi('kicks', bpm);
+        let snareMidiFile = await APICtrl.getMidi('snares', bpm);
+        let hatMidiFile = await APICtrl.getMidi('hats', bpm);
 
         kickMidiFile = kickMidiFile.midi;
         snareMidiFile = snareMidiFile.midi;
@@ -404,6 +409,9 @@ const APPController = (function(UICtrl, APICtrl) {
             e.preventDefault();
             console.log('file dropped');
             area.classList.remove('bg-primary');
+            if (area.querySelector('p')) {
+                area.querySelector('p').remove();
+            };
         })
 
         area.addEventListener('click', (e) => {
@@ -430,8 +438,8 @@ const APPController = (function(UICtrl, APICtrl) {
         list.items.add(file);
         let myFileList = list.files;
 
-        e.target.firstChild.nextElementSibling.files = myFileList;
-        console.log(e.target.firstChild.nextElementSibling.files);
+        DOMInputs.kickFile.files = myFileList;
+        console.log(DOMInputs.kickFile.files);
         DOMInputs.kickDrop.querySelector('h5').textContent = file.name;
         loadCustomKick();
     })
