@@ -46,7 +46,7 @@ app.post('/getMidi', jsonParser, (req, res) => {
 app.post('/getSamples', jsonParser, (req, res) => {
     const body = req.body;
     const drum = body.drum;
-    const directory = '/media/samples/' + drum + '/';
+    const directory = `/media/samples/${drum}/`;
     const mediaPath = path.join(__dirname, directory);
     let sampleArray = [];
     fs.readdir(mediaPath, (err, files) => {
@@ -65,41 +65,16 @@ app.post('/getSamples', jsonParser, (req, res) => {
     })
 })
 
-app.post('/kickUpload', (req, res) => {
+app.post('/sampleUpload', (req, res) => {
     if (req.files) {
-        let sampleFile = req.files.kick;
+        let sampleFile = req.files.sample;
         let uploadPath = __dirname + '/public/uploads/' + sampleFile.name;
         sampleFile.mv(uploadPath);
-        console.log('uploaded kick');
-        res.send('noice')
+        console.log('uploaded ' + sampleFile.name);
     } else {
-        console.log('error uploading kick');
+        console.log('error uploading sample.');
         res.status(400);
     }
-})
-
-app.post('/snareUpload', (req, res) => {
-    if (req.files) {
-        let sampleFile = req.files.snare;
-        let uploadPath = __dirname + '/public/uploads/' + sampleFile.name;
-        sampleFile.mv(uploadPath);
-        console.log('uploaded Snare')
-    } else {
-        console.log('error uploading snare')
-    }
-    res.end();
-})
-
-app.post('/hatUpload', (req, res) => {
-    if (req.files) {
-        let sampleFile = req.files.hat;
-        let uploadPath = __dirname + '/public/uploads/' + sampleFile.name;
-        sampleFile.mv(uploadPath);
-        console.log('uploaded Hat')
-    } else {
-        console.log('error uploading hat')
-    }
-    res.end();
 })
 
 //page calls

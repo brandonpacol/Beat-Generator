@@ -89,24 +89,6 @@ const APIController = (function() {
         getSampler(drum) {
             return _getSampler(drum);
         },
-        setKickSampler(kickSampler) {
-            return _setKickSampler(kickSampler);
-        },
-        getKickSampler() {
-            return _getKickSampler();
-        },
-        setSnareSampler(snareSampler) {
-            return _setSnareSampler(snareSampler);
-        },
-        getSnareSampler() {
-            return _getSnareSampler();
-        },
-        setHatSampler(hatSampler) {
-            return _setHatSampler(hatSampler);
-        },
-        getHatSampler() {
-            return _getHatSampler();
-        },
         setMidiArray(newMidiArray) {
             return _setMidiArray(newMidiArray);
         },
@@ -150,9 +132,9 @@ const UIController = (function() {
         setSamples: '#set-samples',
         play: '#play',
         formSelect: '#options',
-        kickFile: '#kickUpload',
-        snareFile: '#snareUpload',
-        hatFile: '#hatUpload',
+        kickFile: '#kick-file',
+        snareFile: '#snare-file',
+        hatFile: '#hat-file',
         kickDrop: '#kick-drop',
         snareDrop: '#snare-drop',
         hatDrop: '#hat-drop',
@@ -189,25 +171,9 @@ const UIController = (function() {
             }
         },
 
-        changeDownload(domElement, midiFile) {
-            domElement.href = midiFile;
-        },
-
-        getSampleInput(domElement) {
-            return domElement.value;
-        },
-
         createListOptions(domElement, filename, label) {
             const html = `<option value="${filename}">${label}</option>`
             domElement.insertAdjacentHTML('beforeend', html);
-        },
-
-        disableUpload(domElement) {
-            domElement.disabled = true;
-        },
-
-        enableUpload(domElement) {
-            domElement.disabled = false;
         }
         
     }
@@ -267,7 +233,6 @@ const APPController = (function(UICtrl, APICtrl) {
         }
     }
     
-    // generated beat functions
     const generateBeat = async () => {    
         let bpm = DOMInputs.bpmSelect.value;
 
@@ -285,9 +250,9 @@ const APPController = (function(UICtrl, APICtrl) {
         APICtrl.setOutputMidi(outputMidi);
         console.log('output midi: ' + outputMidi.tracks);
     
-        UICtrl.changeDownload(DOMInputs.kickMidiDownload, kickMidiFile);
-        UICtrl.changeDownload(DOMInputs.snareMidiDownload, snareMidiFile);
-        UICtrl.changeDownload(DOMInputs.hatMidiDownload, hatMidiFile);
+        DOMInputs.kickMidiDownload.href = kickMidiFile;
+        DOMInputs.snareMidiDownload.href = snareMidiFile;
+        DOMInputs.hatMidiDownload.href = hatMidiFile;
     }
 
     const loadinitialPage = async () => {
@@ -363,39 +328,44 @@ const APPController = (function(UICtrl, APICtrl) {
             e.preventDefault();
             console.log('file dropped');
             area.classList.remove('bg-primary');
-            if (area.querySelector('p')) {
-                area.querySelector('p').remove();
-            }
 
             const file = e.dataTransfer.files[0];
-            let list = new DataTransfer();
-            list.items.add(file);
-            let myFileList = list.files;
+            const filesize = file.size / 1024 / 1024;
 
-            let input = area.querySelector('input');
-            input.files = myFileList;
-            console.log(input.files);
-            area.querySelector('h5').textContent = file.name;
-
-            const filesize = input.files[0].size / 1024 / 1024;
-            const call = input.id;
-            const drum = input.getAttribute('drum');
-
-            if(filesize > 1) {
-                alert('File exceeds 1MB.');
-            } else {
-                var xhttp = new XMLHttpRequest();
+            if (file.type == 'audio/wav' || file.type == 'audio/mp3') {
+                if(filesize < 1) {
+                    let list = new DataTransfer();
+                    list.items.add(file);
+                    let myFileList = list.files;
         
-                xhttp.open('POST', call)
-                var formData = new FormData()
-                formData.append(drum, input.files[0]);
-                xhttp.send(formData);
-                setTimeout(function(){
-                    let name = input.files[0].name;
-                    let sampleFile = APICtrl.getCustomSample(name);
-                    let sample = generateSample(sampleFile);
-                    APICtrl.setSampler(sample, drum);
-                }, 1000)
+                    let input = area.querySelector('input');
+                    input.files = myFileList;
+                    console.log(input.files);
+                    area.querySelector('h5').textContent = file.name;
+
+                    const drum = input.getAttribute('drum');
+
+                    var xhttp = new XMLHttpRequest();
+            
+                    xhttp.open('POST', 'sampleUpload')
+                    var formData = new FormData()
+                    formData.append('sample', input.files[0]);
+                    xhttp.send(formData);
+                    setTimeout(function(){
+                        let name = input.files[0].name;
+                        let sampleFile = APICtrl.getCustomSample(name);
+                        let sample = generateSample(sampleFile);
+                        APICtrl.setSampler(sample, drum);
+                    }, 1000)
+                    
+                    if (area.querySelector('p')) {
+                        area.querySelector('p').remove();
+                    }
+                } else {
+                    alert('File exceeds 1MB.');
+                }
+            } else {
+                alert('Please upload .wav or .mp3 files.')
             }
         })
 
@@ -408,17 +378,15 @@ const APPController = (function(UICtrl, APICtrl) {
             area.querySelector('h5').textContent = input.files[0].name;
 
             const filesize = input.files[0].size / 1024 / 1024;
-            const call = input.id;
-            const drum = input.getAttribute('drum');
 
-            if(filesize > 1) {
-                alert('File exceeds 1MB.');
-            } else {
+            if(filesize < 1) {
+                const drum = input.getAttribute('drum');
+
                 var xhttp = new XMLHttpRequest();
         
-                xhttp.open('POST', call)
+                xhttp.open('POST', 'sampleUpload')
                 var formData = new FormData()
-                formData.append(drum, input.files[0]);
+                formData.append('sample', input.files[0]);
                 xhttp.send(formData);
                 setTimeout(function(){
                     let name = input.files[0].name;
@@ -426,7 +394,10 @@ const APPController = (function(UICtrl, APICtrl) {
                     let sample = generateSample(sampleFile);
                     APICtrl.setSampler(sample, drum);
                 }, 1000)
+            } else {
+                alert('File exceeds 1MB.');
             }
+
         })
 
         area.addEventListener('dragover', (e) => {
