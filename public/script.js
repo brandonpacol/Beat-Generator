@@ -29,7 +29,7 @@ const APIController = (function() {
         }
     }
 
-    const _setMidiArray = (newMidiArray) => {
+    const _setMidiDataArray = (newMidiArray) => {
         midiArray = newMidiArray;
     }
 
@@ -89,8 +89,8 @@ const APIController = (function() {
         getSampler(drum) {
             return _getSampler(drum);
         },
-        setMidiArray(newMidiArray) {
-            return _setMidiArray(newMidiArray);
+        setMidiDataArray(newMidiArray) {
+            return _setMidiDataArray(newMidiArray);
         },
         getMidiArray() {
             return _getMidiArray();
@@ -197,11 +197,11 @@ const APPController = (function(UICtrl, APICtrl) {
         return sampler;
     }
     
-    const generateMidi = async (midiArray) => {
+    const generateMidi = async (midiDataArray) => {
         // write to midi
         let writtenMidi = new Midi();
-        for (let i = 0; i < midiArray.length; i++) {
-            const midi = await Midi.fromUrl(midiArray[i]);
+        for (let i = 0; i < midiDataArray.length; i++) {
+            const midi = new Midi(midiDataArray[i].data);
             const track = writtenMidi.addTrack()
             midi.tracks[0].notes.forEach((note) => {
                 track.addNote(({
@@ -236,23 +236,32 @@ const APPController = (function(UICtrl, APICtrl) {
     const generateBeat = async () => {    
         let bpm = DOMInputs.bpmSelect.value;
 
-        let kickMidiFile = await APICtrl.getMidi('kicks', bpm);
-        let snareMidiFile = await APICtrl.getMidi('snares', bpm);
-        let hatMidiFile = await APICtrl.getMidi('hats', bpm);
+        let kickMidiResult = await APICtrl.getMidi('kicks', bpm);
+        let snareMidiResult = await APICtrl.getMidi('snares', bpm);
+        let hatMidiResult = await APICtrl.getMidi('hats', bpm);
 
-        kickMidiFile = kickMidiFile.midi;
-        snareMidiFile = snareMidiFile.midi;
-        hatMidiFile = hatMidiFile.midi;
+        let kickMidiData = kickMidiResult.midi;
+        let snareMidiData = snareMidiResult.midi;
+        let hatMidiData = hatMidiResult.midi;
 
-        let midiArray = [kickMidiFile, snareMidiFile, hatMidiFile];
-        APICtrl.setMidiArray(midiArray);
-        let outputMidi = await generateMidi(midiArray);
+        let midiDataArray = [kickMidiData, snareMidiData, hatMidiData];
+        APICtrl.setMidiDataArray(midiDataArray);
+        let outputMidi = await generateMidi(midiDataArray);
         APICtrl.setOutputMidi(outputMidi);
         console.log('output midi: ' + outputMidi.tracks);
-    
-        DOMInputs.kickMidiDownload.href = kickMidiFile;
-        DOMInputs.snareMidiDownload.href = snareMidiFile;
-        DOMInputs.hatMidiDownload.href = hatMidiFile;
+
+        let kickBlob = midiToBlob(kickMidiData.data);
+        let snareBlob = midiToBlob(snareMidiData.data);
+        let hatBlob = midiToBlob(hatMidiData.data)
+
+        DOMInputs.kickMidiDownload.href = window.URL.createObjectURL(kickBlob);
+        DOMInputs.snareMidiDownload.href = window.URL.createObjectURL(snareBlob);
+        DOMInputs.hatMidiDownload.href = window.URL.createObjectURL(hatBlob);
+    }
+
+    const midiToBlob = (midiData) => {
+        const data = Uint8Array.from(midiData);
+        return new Blob([data.buffer], { type: 'audio/midi' });
     }
 
     const loadinitialPage = async () => {
@@ -280,21 +289,26 @@ const APPController = (function(UICtrl, APICtrl) {
     })
 
     document.querySelectorAll('.drum-select').forEach((select) => {
-        select.addEventListener('change', () => {
+        select.addEventListener('change', async () => {
             let selectedSample = select.value;
             let drum = select.name;
             let input = select.parentElement.querySelector('input');
-            let sampleFile;
+            let sample;
             if (selectedSample == 'custom') {
                 if (input.files.length > 0) {
                     console.log(`custom ${drum} is loaded`);
-                    selectedSample = input.files[0].name;
-                    sampleFile = APICtrl.getCustomSample(selectedSample);
+                    let file = input.files[0];
+                    
+                    const buffer = await readFile(file);
+                    const ac = new AudioContext();
+                    const audiobuffer = await ac.decodeAudioData(buffer);
+
+                    sample = generateSample(audiobuffer);
                 }
             } else {
-                sampleFile = APICtrl.getSampleFile(drum, selectedSample);
+                let sampleFile = APICtrl.getSampleFile(drum, selectedSample);
+                sample = generateSample(sampleFile);
             }
-            let sample = generateSample(sampleFile);
             APICtrl.setSampler(sample, drum);
         })
     })
@@ -323,81 +337,38 @@ const APPController = (function(UICtrl, APICtrl) {
         }
     })
 
+    // https://stackoverflow.com/questions/49032616/filereader-returning-undefined-for-file-object-in-jquery
+    function readFile(file){
+        return new Promise((res, rej) => {
+            // create file reader
+            let reader = new FileReader();
+            
+            // register event listeners
+            reader.addEventListener("loadend", e => res(e.target.result));
+            reader.addEventListener("error", rej);
+            
+            // read file
+            reader.readAsArrayBuffer(file);
+        });
+    }
+
     DOMInputs.dropArea.forEach((area) => {
-        area.addEventListener('drop', (e) => {
+        area.addEventListener('click', () => {
+            area.querySelector("input").click();
+        })
+        
+        area.addEventListener('drop', async (e) => {
             e.preventDefault();
             console.log('file dropped');
             area.classList.remove('bg-primary');
 
             const file = e.dataTransfer.files[0];
-            const filesize = file.size / 1024 / 1024;
-
-            if (file.type == 'audio/wav' || file.type == 'audio/mp3') {
-                if(filesize < 1) {
-                    let list = new DataTransfer();
-                    list.items.add(file);
-                    let myFileList = list.files;
-        
-                    let input = area.querySelector('input');
-                    input.files = myFileList;
-                    console.log(input.files);
-                    area.querySelector('h5').textContent = file.name;
-
-                    const drum = input.getAttribute('drum');
-
-                    var xhttp = new XMLHttpRequest();
-            
-                    xhttp.open('POST', 'sampleUpload')
-                    var formData = new FormData()
-                    formData.append('sample', input.files[0]);
-                    xhttp.send(formData);
-                    setTimeout(function(){
-                        let name = input.files[0].name;
-                        let sampleFile = APICtrl.getCustomSample(name);
-                        let sample = generateSample(sampleFile);
-                        APICtrl.setSampler(sample, drum);
-                    }, 1000)
-                    
-                    if (area.querySelector('p')) {
-                        area.querySelector('p').remove();
-                    }
-                } else {
-                    alert('File exceeds 1MB.');
-                }
-            } else {
-                alert('Please upload .wav or .mp3 files.')
-            }
+            await uploadSample(area, file);
         })
 
-        area.addEventListener('click', () => {
-            area.querySelector("input").click();
-        })
-
-        area.querySelector('input').addEventListener('change', () => {
-            let input = area.querySelector('input');
-            area.querySelector('h5').textContent = input.files[0].name;
-
-            const filesize = input.files[0].size / 1024 / 1024;
-
-            if(filesize < 1) {
-                const drum = input.getAttribute('drum');
-
-                var xhttp = new XMLHttpRequest();
-        
-                xhttp.open('POST', 'sampleUpload')
-                var formData = new FormData()
-                formData.append('sample', input.files[0]);
-                xhttp.send(formData);
-                setTimeout(function(){
-                    let name = input.files[0].name;
-                    let sampleFile = APICtrl.getCustomSample(name);
-                    let sample = generateSample(sampleFile);
-                    APICtrl.setSampler(sample, drum);
-                }, 1000)
-            } else {
-                alert('File exceeds 1MB.');
-            }
-
+        area.querySelector('input').addEventListener('change', async () => {
+            const file = area.querySelector('input').files[0];
+            await uploadSample(area, file);
         })
 
         area.addEventListener('dragover', (e) => {
@@ -410,6 +381,32 @@ const APPController = (function(UICtrl, APICtrl) {
             area.classList.remove('bg-primary');
         })
     })
+
+    const uploadSample = async (area, file) => {
+        let input = area.querySelector('input');
+        const filesize = file.size / 1024 / 1024;
+
+        if (file.type == 'audio/wav' || file.type == 'audio/mp3') {
+            if(filesize < 1) {
+                const buffer = await readFile(file);
+                const ac = new AudioContext();
+                const audiobuffer = await ac.decodeAudioData(buffer);
+                
+                area.querySelector('h5').textContent = file.name;
+                if (area.querySelector('p')) {
+                    area.querySelector('p').remove();
+                }
+
+                const drum = input.getAttribute('drum');
+                let sample = generateSample(audiobuffer);
+                APICtrl.setSampler(sample, drum);
+            } else {
+                alert('File exceeds 1MB.');
+            }
+        } else {
+            alert('Please upload .wav or .mp3 files.')
+        }
+    }
 
     return {
         init() {

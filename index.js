@@ -38,7 +38,9 @@ app.post('/getMidi', jsonParser, (req, res) => {
             let index = Math.round(Math.random() * (max - min) + min);
             let file = files[index];
 
-            res.json({ "midi" : directory + file });
+            const midiData = fs.readFileSync(mediaPath + file);
+
+            res.json({ "midi" : midiData });
         }    
     })
 })
@@ -63,18 +65,6 @@ app.post('/getSamples', jsonParser, (req, res) => {
             res.end();
         }    
     })
-})
-
-app.post('/sampleUpload', (req, res) => {
-    if (req.files) {
-        let sampleFile = req.files.sample;
-        let uploadPath = __dirname + '/public/uploads/' + sampleFile.name;
-        sampleFile.mv(uploadPath);
-        console.log('uploaded ' + sampleFile.name);
-    } else {
-        console.log('error uploading sample.');
-        res.status(400);
-    }
 })
 
 //page calls
