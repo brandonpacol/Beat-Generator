@@ -361,6 +361,10 @@ const APPController = (function(UICtrl, APICtrl) {
             area.classList.remove('bg-primary');
 
             const file = e.dataTransfer.files[0];
+            let list = new DataTransfer();
+            list.items.add(file);
+            let myFileList = list.files;
+            area.querySelector('input').files = myFileList;
             await uploadSample(area, file);
         })
 
