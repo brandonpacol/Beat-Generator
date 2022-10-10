@@ -29,7 +29,7 @@ const APIController = (function() {
         }
     }
 
-    const _setMidiDataArray = (newMidiArray) => {
+    const _setMidiArray = (newMidiArray) => {
         midiArray = newMidiArray;
     }
 
@@ -89,8 +89,8 @@ const APIController = (function() {
         getSampler(drum) {
             return _getSampler(drum);
         },
-        setMidiDataArray(newMidiArray) {
-            return _setMidiDataArray(newMidiArray);
+        setMidiArray(newMidiArray) {
+            return _setMidiArray(newMidiArray);
         },
         getMidiArray() {
             return _getMidiArray();
@@ -199,11 +199,11 @@ const APPController = (function(UICtrl, APICtrl) {
         return sampler;
     }
     
-    const generateMidi = async (midiDataArray) => {
+    const generateMidi = async (midiArray) => {
         // write to midi
         let writtenMidi = new Midi();
-        for (let i = 0; i < midiDataArray.length; i++) {
-            const midi = new Midi(midiDataArray[i].data);
+        for (let i = 0; i < midiArray.length; i++) {
+            const midi = midiArray[i];
             const track = writtenMidi.addTrack()
             midi.tracks[0].notes.forEach((note) => {
                 track.addNote(({
@@ -238,36 +238,28 @@ const APPController = (function(UICtrl, APICtrl) {
     const generateBeat = async () => {    
         let bpm = DOMInputs.bpmSelect.value;
 
-        let kickMidiResult = await APICtrl.getMidi('kicks', bpm);
-        let snareMidiResult = await APICtrl.getMidi('snares', bpm);
-        let hatMidiResult = await APICtrl.getMidi('hats', bpm);
+        let kickMidiData = await APICtrl.getMidi('kicks', bpm);
+        let snareMidiData = await APICtrl.getMidi('snares', bpm);
+        let hatMidiData = await APICtrl.getMidi('hats', bpm);
 
-        let kickMidiData = kickMidiResult.midi;
-        let snareMidiData = snareMidiResult.midi;
-        let hatMidiData = hatMidiResult.midi;
+        let kickMidi = new Midi(kickMidiData.midi.data);
+        let snareMidi = new Midi(snareMidiData.midi.data);
+        let hatMidi = new Midi(hatMidiData.midi.data);
 
-        let midiDataArray = [kickMidiData, snareMidiData, hatMidiData];
-        APICtrl.setMidiDataArray(midiDataArray);
-        let outputMidi = await generateMidi(midiDataArray);
+        let midiArray = [kickMidi, snareMidi, hatMidi];
+        APICtrl.setMidiArray(midiArray);
+        let outputMidi = await generateMidi(midiArray);
         APICtrl.setOutputMidi(outputMidi);
-        console.log(outputMidi)
-        console.log(outputMidi.toArray().buffer);
 
-        let kickBlob = midiToBlob(kickMidiData.data);
-        let snareBlob = midiToBlob(snareMidiData.data);
-        let hatBlob = midiToBlob(hatMidiData.data)
-        let allBlob = new Blob([outputMidi.toArray().buffer], { type: 'audio/midi'})
-        console.log(allBlob);
+        let kickBlob = new Blob([kickMidi.toArray().buffer], { type: 'audio/midi'});
+        let snareBlob = new Blob([snareMidi.toArray().buffer], { type: 'audio/midi'});
+        let hatBlob = new Blob([hatMidi.toArray().buffer], { type: 'audio/midi'});
+        let allBlob = new Blob([outputMidi.toArray().buffer], { type: 'audio/midi'});
 
         DOMInputs.kickMidiDownload.href = window.URL.createObjectURL(kickBlob);
         DOMInputs.snareMidiDownload.href = window.URL.createObjectURL(snareBlob);
         DOMInputs.hatMidiDownload.href = window.URL.createObjectURL(hatBlob);
         DOMInputs.allMidiDownload.href = window.URL.createObjectURL(allBlob);
-    }
-
-    const midiToBlob = (midiData) => {
-        const data = Uint8Array.from(midiData);
-        return new Blob([data.buffer], { type: 'audio/midi' });
     }
 
     const loadinitialPage = async () => {
