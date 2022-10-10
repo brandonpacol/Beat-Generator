@@ -125,6 +125,7 @@ const UIController = (function() {
         kickMidiDownload: '#kick-midi-download',
         snareMidiDownload: '#snare-midi-download',
         hatMidiDownload: '#hat-midi-download',
+        allMidiDownload: '#all-midi-download',
         kicks: '#kicks',
         snares: '#snares',
         hats: '#hats',
@@ -150,6 +151,7 @@ const UIController = (function() {
                 kickMidiDownload : document.querySelector(DOMElements.kickMidiDownload),
                 snareMidiDownload: document.querySelector(DOMElements.snareMidiDownload),
                 hatMidiDownload: document.querySelector(DOMElements.hatMidiDownload),
+                allMidiDownload: document.querySelector(DOMElements.allMidiDownload),
                 kicks: document.querySelector(DOMElements.kicks),
                 snares: document.querySelector(DOMElements.snares),
                 hats: document.querySelector(DOMElements.hats),
@@ -212,7 +214,7 @@ const APPController = (function(UICtrl, APICtrl) {
                 }))
             });
         } 
-        return writtenMidi
+        return writtenMidi;
     }
     
     const playSample = async (sampleArray, midi) => {
@@ -248,15 +250,19 @@ const APPController = (function(UICtrl, APICtrl) {
         APICtrl.setMidiDataArray(midiDataArray);
         let outputMidi = await generateMidi(midiDataArray);
         APICtrl.setOutputMidi(outputMidi);
-        console.log('output midi: ' + outputMidi.tracks);
+        console.log(outputMidi)
+        console.log(outputMidi.toArray().buffer);
 
         let kickBlob = midiToBlob(kickMidiData.data);
         let snareBlob = midiToBlob(snareMidiData.data);
         let hatBlob = midiToBlob(hatMidiData.data)
+        let allBlob = new Blob([outputMidi.toArray().buffer], { type: 'audio/midi'})
+        console.log(allBlob);
 
         DOMInputs.kickMidiDownload.href = window.URL.createObjectURL(kickBlob);
         DOMInputs.snareMidiDownload.href = window.URL.createObjectURL(snareBlob);
         DOMInputs.hatMidiDownload.href = window.URL.createObjectURL(hatBlob);
+        DOMInputs.allMidiDownload.href = window.URL.createObjectURL(allBlob);
     }
 
     const midiToBlob = (midiData) => {
