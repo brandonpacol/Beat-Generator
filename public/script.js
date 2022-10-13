@@ -4,6 +4,10 @@ const APIController = (function() {
     let midiArray, outputMidi, kick, snare, hat;
     let partArray = [];
 
+    /**
+    * @param {Sampler} sampler
+    * @param {String} drum
+    */
     // private methods
     const _setSampler = (sampler, drum) => {
         switch(drum) {
@@ -19,6 +23,10 @@ const APIController = (function() {
         }
     }
 
+    /**
+    * @param {String} drum
+    * @return {Sampler}
+    */
     const _getSampler = (drum) => {
         switch(drum) {
             case 'kick':
@@ -30,30 +38,53 @@ const APIController = (function() {
         }
     }
 
+    /**
+    * @param {Array.Midi} newMidiArray
+    */
     const _setMidiArray = (newMidiArray) => {
         midiArray = newMidiArray;
     }
 
+    /**
+    * @return {Array.Midi}
+    */
     const _getMidiArray = () => {
         return midiArray;
     }
 
+    /**
+    * @param {Midi} midi
+    */
     const _setOutputMidi = (midi) => {
         outputMidi = midi;
     }
 
+    /**
+    * @return {Midi}
+    */
     const _getOutputMidi = () => {
         return outputMidi;
     }
 
+    /**
+    * @param {Array.Part} newPartArray
+    */
     const _setPartArray = (newPartArray) => {
         partArray = newPartArray;
     }
 
+    /**
+    * @return {Array.Part}
+    */
     const _getPartArray = () => {
         return partArray;
     }
 
+    /**
+    * @param {String} drum
+    * @param {String} bpm
+    * @return {JSON} contains MIDI data
+    */
     const _getMidi = async (drum, bpm) => {
         const result = await fetch('/getMidi', {
             method: "POST",
@@ -69,10 +100,19 @@ const APIController = (function() {
         return data;
     }
 
+    /**
+    * @param {String} drum
+    * @param {String} filename
+    * @return {String} location of the sample
+    */
     const _getSampleFile = (drum, filename) => {
         return '/media/samples/' + drum + '/' + filename;
     }
 
+    /**
+    * @param {String} drum
+    * @return {JSON} list of samples of the specific drum library
+    */
     const _getSampleList = async (drum) => {
         const result = await fetch('/getSamples', {
             method: "POST",
@@ -85,10 +125,6 @@ const APIController = (function() {
             })});
         const data = await result.json();
         return data;       
-    }
-
-    const _getCustomSample = (filename) => {
-        return '/uploads/' + filename; 
     }
 
     return {
@@ -124,9 +160,6 @@ const APIController = (function() {
         },
         getSampleList(drum) {
             return _getSampleList(drum);
-        },
-        getCustomSample(filename) {
-            return _getCustomSample(filename);
         }
     }
 })();
@@ -205,6 +238,10 @@ const APPController = (function(UICtrl, APICtrl) {
     const DOMInputs = UICtrl.inputField();
     
     // tone js functions
+    /**
+    * @param {String} filename
+    * @return {Sampler}
+    */
     const generateSample = (filename) => {
         const sampler = new Tone.Sampler({
             urls: {
@@ -216,6 +253,10 @@ const APPController = (function(UICtrl, APICtrl) {
         return sampler;
     }
     
+    /**
+    * @param {Array.Midi} midiArray
+    * @return {Midi} consolidated MIDI data
+    */
     const generateMidi = async (midiArray) => {
         // write to midi
         let writtenMidi = new Midi();
@@ -234,6 +275,11 @@ const APPController = (function(UICtrl, APICtrl) {
         return writtenMidi;
     }
     
+    /**
+    * @param {Array.Sampler} sampleArray
+    * @param {Midi} midi
+    * @param {String} bpm
+    */
     const setParts = (sampleArray, midi, bpm) => {
         let partArray = APICtrl.getPartArray();
 
@@ -368,13 +414,16 @@ const APPController = (function(UICtrl, APICtrl) {
     
     DOMInputs.formSelect.addEventListener('change', (event) => {
         if (event.target.value != 'custom') {
-            $('#' + event.target.id).next().children()[0].disabled = true
+            $('#' + event.target.id).next().addClass('faded');
         } else {
-            $('#' + event.target.id).next().children()[0].disabled = false;
+            $('#' + event.target.id).next().removeClass('faded');
         }
     })
 
     // https://stackoverflow.com/questions/49032616/filereader-returning-undefined-for-file-object-in-jquery
+    /**
+    * @param {File} file
+    */
     function readFile(file){
         return new Promise((res, rej) => {
             // create file reader
@@ -423,6 +472,10 @@ const APPController = (function(UICtrl, APICtrl) {
         })
     })
 
+    /**
+    * @param {Element} area 
+    * @param {File} file
+    */
     const uploadSample = async (area, file) => {
         let input = area.querySelector('input');
         const filesize = file.size / 1024 / 1024;
