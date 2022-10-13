@@ -2,6 +2,7 @@ const APIController = (function() {
     
     // private variables
     let midiArray, outputMidi, kick, snare, hat;
+    let partArray = [];
 
     // private methods
     const _setSampler = (sampler, drum) => {
@@ -43,6 +44,14 @@ const APIController = (function() {
 
     const _getOutputMidi = () => {
         return outputMidi;
+    }
+
+    const _setPartArray = (newPartArray) => {
+        partArray = newPartArray;
+    }
+
+    const _getPartArray = () => {
+        return partArray;
     }
 
     const _getMidi = async (drum, bpm) => {
@@ -101,6 +110,12 @@ const APIController = (function() {
         getOutputMidi() {
             return _getOutputMidi();
         },
+        setPartArray(newPartArray) {
+            return _setPartArray(newPartArray);
+        },
+        getPartArray() {
+            return _getPartArray();
+        },
         getMidi(drum, bpm) {
             return _getMidi(drum, bpm);
         },
@@ -132,6 +147,7 @@ const UIController = (function() {
         generateBeat: '#generate-beat',
         setSamples: '#set-samples',
         play: '#play',
+        stop: '#stop',
         formSelect: '#options',
         kickFile: '#kick-file',
         snareFile: '#snare-file',
@@ -158,6 +174,7 @@ const UIController = (function() {
                 generateBeat: document.querySelector(DOMElements.generateBeat),
                 setSamples: document.querySelector(DOMElements.setSamples),
                 play: document.querySelector(DOMElements.play),
+                stop: document.querySelector(DOMElements.stop),
                 formSelect: document.querySelector(DOMElements.formSelect),
                 kickUpload: document.querySelector(DOMElements.kickUpload),
                 kickFile: document.querySelector(DOMElements.kickFile),
@@ -217,22 +234,30 @@ const APPController = (function(UICtrl, APICtrl) {
         return writtenMidi;
     }
     
-    const playSample = async (sampleArray, midi) => {
+    const setParts = (sampleArray, midi, bpm) => {
+        let partArray = APICtrl.getPartArray();
+
+        Tone.Transport.bpm.value = bpm;
+        
+        const synth = new Tone.Synth().toDestination();
 
         for (let i = 0; i < sampleArray.length; i++) {
-            // load a midi file in the browser
-            const now = Tone.now() + 0.5;
-    
-            midi.tracks[i].notes.forEach((note) => {
-                sampleArray[i].triggerAttackRelease(
-                    note.name,
-                    note.duration,
-                    note.time + now,
-                    note.velocity
-                );
-            });
-
+            let finalnotes = [];
+            const notes = midi.tracks[i].notes
+            notes.forEach(note => {
+                let time = Tone.Time(note.time).toBarsBeatsSixteenths();
+                finalnotes.push([time, 'C3']);
+            })
+            const part = new Tone.Part(((time, note) => {
+                // the value is an object which contains both the note and the velocity
+                sampleArray[i].triggerAttackRelease(note, "16n", time);
+            }), finalnotes).start(0);
+            part.loop = true;
+            part.loopEnd = '2m';
+            partArray.push(part);
         }
+
+        APICtrl.setPartArray(partArray);
     }
     
     const generateBeat = async () => {    
@@ -311,21 +336,35 @@ const APPController = (function(UICtrl, APICtrl) {
         })
     })
     
-    DOMInputs.play.addEventListener('click', async () => {
-        try {
+    DOMInputs.play.addEventListener('click', () => {
+        let kick = APICtrl.getSampler('kick');
+        let snare = APICtrl.getSampler('snare');
+        let hat = APICtrl.getSampler('hat');
+        let sampleArray = [kick, snare, hat];
+        if (kick !== undefined && snare !== undefined && hat !== undefined) {
+            let bpm = DOMInputs.bpmSelect.value;
             let outputMidi = APICtrl.getOutputMidi();
-            let kick = APICtrl.getSampler('kick');
-            let snare = APICtrl.getSampler('snare');
-            let hat = APICtrl.getSampler('hat');
-            let sampleArray = [kick, snare, hat];
-            await playSample(sampleArray, outputMidi);
+            setParts(sampleArray, outputMidi, bpm);
+            Tone.Transport.start();
             let midiArray = APICtrl.getMidiArray();
             console.log('Playing ' + midiArray[0] + ' and ' + midiArray[2] +'.');
-        } catch (err) {
-            alert('Load Custom Samples!')
-            console.log(err);
+            DOMInputs.play.disabled = true;
+            DOMInputs.stop.disabled = false;
+        } else {
+            alert('Load Custom Samples!');
         }
     });
+
+    DOMInputs.stop.addEventListener('click', () => {
+        Tone.Transport.stop();
+        let partArray = APICtrl.getPartArray();
+        partArray.forEach((part) => {
+            part.dispose();
+        })
+        APICtrl.setPartArray([]);
+        DOMInputs.play.disabled = false;
+        DOMInputs.stop.disabled = true;
+    })
     
     DOMInputs.formSelect.addEventListener('change', (event) => {
         if (event.target.value != 'custom') {
