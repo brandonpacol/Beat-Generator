@@ -189,6 +189,7 @@ const UIController = (function() {
         snareDrop: '#snare-drop',
         hatDrop: '#hat-drop',
         bpmSelect: '#bpm-select',
+        bpmChange: '#bpm-change',
         dropArea: '.drop-area'
     }
 
@@ -219,6 +220,7 @@ const UIController = (function() {
                 snareDrop: document.querySelector(DOMElements.snareDrop),
                 hatDrop: document.querySelector(DOMElements.hatDrop),
                 bpmSelect: document.querySelector(DOMElements.bpmSelect),
+                bpmChange: document.querySelector(DOMElements.bpmChange),
                 dropArea: document.querySelectorAll(DOMElements.dropArea)
             }
         },
@@ -381,6 +383,14 @@ const APPController = (function(UICtrl, APICtrl) {
             APICtrl.setSampler(sample, drum);
         })
     })
+
+    DOMInputs.bpmChange.addEventListener('change', () => {
+        let bpmChange = parseInt(DOMInputs.bpmChange.value);
+        let length = DOMInputs.bpmSelect.options.length;
+        for (let i = 0; i<length; i++) {
+            DOMInputs.bpmSelect.options[i].textContent = parseInt(DOMInputs.bpmSelect.options[i].value) + bpmChange;
+        }
+    })
     
     DOMInputs.play.addEventListener('click', () => {
         let kick = APICtrl.getSampler('kick');
@@ -391,6 +401,10 @@ const APPController = (function(UICtrl, APICtrl) {
             let bpm = DOMInputs.bpmSelect.value;
             let outputMidi = APICtrl.getOutputMidi();
             setParts(sampleArray, outputMidi, bpm);
+            let bpmChange = DOMInputs.bpmChange.value;
+            let totalBpm = parseInt(bpm) + parseInt(bpmChange);
+            console.log('total bpm is ' + totalBpm)
+            Tone.Transport.bpm.value = totalBpm;
             Tone.Transport.start();
             let midiArray = APICtrl.getMidiArray();
             console.log('Playing ' + midiArray[0] + ' and ' + midiArray[2] +'.');
