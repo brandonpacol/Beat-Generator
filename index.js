@@ -15,6 +15,7 @@ var jsonParser = bodyParser.json();
 
 app.use(express.static('public'))
 app.use('/media', express.static('media'));
+app.use('/js' , express.static('node_modules/bootstrap/dist/js/'));
 
 
 app.listen(port, () => {
