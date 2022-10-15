@@ -300,6 +300,9 @@ const APPController = (function(UICtrl, APICtrl) {
                 // the value is an object which contains both the note and the velocity
                 sampleArray[i].triggerAttackRelease(note, "16n", time);
             }), finalnotes).start(0);
+            if (document.querySelectorAll('.mute')[i].classList.contains('btn-secondary')) {
+                part.mute = true;
+            }
             part.loop = true;
             part.loopEnd = '2m';
             partArray.push(part);
@@ -308,16 +311,33 @@ const APPController = (function(UICtrl, APICtrl) {
         APICtrl.setPartArray(partArray);
     }
     
+    let lockArray = [false, false, false];
     const generateBeat = async () => {    
         let bpm = DOMInputs.bpmSelect.value;
 
-        let kickMidiData = await APICtrl.getMidi('kicks', bpm);
-        let snareMidiData = await APICtrl.getMidi('snares', bpm);
-        let hatMidiData = await APICtrl.getMidi('hats', bpm);
+        let kickMidi;
+        if (!lockArray[0]) {
+            let kickMidiData = await APICtrl.getMidi('kicks', bpm);
+            kickMidi = new Midi(kickMidiData.midi.data);
+        } else {
+            kickMidi = APICtrl.getMidiArray()[0];
+        }
 
-        let kickMidi = new Midi(kickMidiData.midi.data);
-        let snareMidi = new Midi(snareMidiData.midi.data);
-        let hatMidi = new Midi(hatMidiData.midi.data);
+        let snareMidi;
+        if (!lockArray[1]) {
+            let snareMidiData = await APICtrl.getMidi('snares', bpm);        
+            snareMidi = new Midi(snareMidiData.midi.data);
+        } else {
+            snareMidi = APICtrl.getMidiArray()[1];
+        }
+
+        let hatMidi;
+        if (!lockArray[2]) {
+            let hatMidiData = await APICtrl.getMidi('hats', bpm);
+            hatMidi = new Midi(hatMidiData.midi.data);
+        } else {
+            hatMidi = APICtrl.getMidiArray()[2];
+        }
 
         let midiArray = [kickMidi, snareMidi, hatMidi];
         APICtrl.setMidiArray(midiArray);
@@ -352,9 +372,54 @@ const APPController = (function(UICtrl, APICtrl) {
         }
 
         await generateBeat();
+
+        $('[data-toggle="tooltip"]').tooltip();
     }
     
     // DOM functions
+    // document.querySelectorAll('.download').forEach((element) => {
+    //     console.log($('#' + element.id));
+    // })
+
+
+    document.querySelectorAll('.lock').forEach((element, index) => {
+        element.addEventListener('click', () => {
+            if (lockArray[index] === false) {
+                lockArray[index]= true;
+                element.classList.remove('btn-outline-secondary');
+                element.classList.add('btn-secondary');
+                element.innerHTML = '<i class="fa-solid fa-lock"></i>'
+            } else {
+                lockArray[index] = false;
+                element.classList.remove('btn-secondary');
+                element.classList.add('btn-outline-secondary');
+                element.innerHTML = '<i class="fa-solid fa-unlock"></i>'
+            }
+            console.log(element.id + " is locked: " + lockArray[index]);
+        })
+    })
+
+    document.querySelectorAll('.mute').forEach((element, index) => {
+        element.addEventListener('click', () => {
+            let part = APICtrl.getPartArray()[index];
+            if (part !== undefined && part.length > 0) {
+                if (!part.mute) {
+                    part.mute = true;
+                } else {
+                    part.mute = false;
+                }
+            }
+
+            if (element.classList.contains('btn-outline-secondary')) {
+                element.classList.remove('btn-outline-secondary');
+                element.classList.add('btn-secondary');
+            } else {
+                element.classList.remove('btn-secondary');
+                element.classList.add('btn-outline-secondary');
+            }
+        })
+    })
+
     DOMInputs.generateBeat.addEventListener('click', async () => {
         await generateBeat();
     })
@@ -477,12 +542,14 @@ const APPController = (function(UICtrl, APICtrl) {
 
         area.addEventListener('dragover', (e) => {
             e.preventDefault();
+            area.classList.remove('bg-light');
             area.classList.add('bg-primary');
         })
 
         area.addEventListener('dragleave', (e) => {
             e.preventDefault();
             area.classList.remove('bg-primary');
+            area.classList.add('bg-light');
         })
     })
 

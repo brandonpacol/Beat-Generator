@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Random Beat Generator</title>
+    <script src="https://kit.fontawesome.com/ef1861eedc.js" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <link rel="stylesheet" href="scss/main.css"/>
 </head>
@@ -63,7 +64,17 @@
                     <h5>Upload Kick</h5>
                     <p>Click or drag and drop to upload</p>
                 </div>
-                <a href="" download="kick.midi" id="kick-midi-download" class="btn btn-dark btn-sm">Kick Midi</a>
+                <div class="row gx-1">
+                    <div class="col">
+                        <button id="kick-lock" class="lock btn btn-outline-secondary btn-sm w-100" data-toggle="tooltip" data-placement="top" title="Lock Midi"><i class="fa-solid fa-unlock"></i></button>
+                    </div>
+                    <div class="col">
+                        <button id="kick-mute" class="mute btn btn-outline-secondary btn-sm w-100" data-toggle="tooltip" data-placement="top" title="Mute"><i class="fa-solid fa-volume-xmark"></i></button>
+                    </div>
+                    <div class="col">
+                        <a href="" download="kick.midi" id="kick-midi-download" class="download btn btn-dark btn-sm w-100" data-toggle="tooltip" data-placement="top" title="Download Kick Midi"><i class="fa-regular fa-circle-down"></i></a>
+                    </div>
+                </div>
             </div>
             <div class="col-sm-4 d-flex flex-column mb-3">
                 <select name="snare" id="snares" class="drum-select form-select-sm mb-2">
@@ -74,7 +85,17 @@
                     <h5>Upload Snare</h5>
                     <p>Click or drag and drop to upload</p>
                 </div>
-                <a href="" download="snare.midi" id="snare-midi-download" class="btn btn-dark btn-sm">Snare Midi</a>
+                <div class="row gx-1">
+                    <div class="col">
+                        <button id="snare-lock" class="lock btn btn-outline-secondary btn-sm w-100" data-toggle="tooltip" data-placement="top" title="Lock Midi"><i class="fa-solid fa-unlock"></i></button>
+                    </div>
+                    <div class="col">
+                        <button id="snare-mute" class="mute btn btn-outline-secondary btn-sm w-100" data-toggle="tooltip" data-placement="top" title="Mute"><i class="fa-solid fa-volume-xmark"></i></button>
+                    </div>
+                    <div class="col">
+                        <a href="" download="snare.midi" id="snare-midi-download" class="download btn btn-dark btn-sm w-100" data-toggle="tooltip" data-placement="top" title="Download Snare Midi"><i class="fa-regular fa-circle-down"></i></a>
+                    </div>
+                </div>
             </div>
             <div class="col-sm-4 d-flex flex-column mb-3">
                 <select name="hat" id="hats" class="drum-select form-select-sm mb-2">
@@ -85,7 +106,17 @@
                     <h5>Upload Hat</h5>
                     <p>Click or drag and drop to upload</p>
                 </div>
-                <a href="" download="hat.midi" id="hat-midi-download" class="btn btn-dark btn-sm">Hat Midi</a>
+                <div class="row gx-1">
+                    <div class="col">
+                        <button id="hat-lock" class="lock btn btn-outline-secondary btn-sm w-100" data-toggle="tooltip" data-placement="top" title="Lock Midi"><i class="fa-solid fa-unlock"></i></button>
+                    </div>
+                    <div class="col">
+                        <button id="hat-mute" class="mute btn btn-outline-secondary btn-sm w-100" data-toggle="tooltip" data-placement="top" title="Mute"><i class="fa-solid fa-volume-xmark"></i></button>
+                    </div>
+                    <div class="col">
+                        <a href="" download="hat.midi" id="hat-midi-download" class="download btn btn-dark btn-sm w-100" data-toggle="tooltip" data-placement="top" title="Download Hat Midi"><i class="fa-regular fa-circle-down"></i></a>
+                    </div>
+                </div>
             </div>
             <div class="mb-2">
                 <a href="" download="drum.midi" id="all-midi-download" class="btn btn-dark btn-sm">Download All Midi</a>
@@ -93,18 +124,17 @@
             </div>
         </div>
 
-        <button type="button" id="play" class="btn btn-primary">Play</button>
-        <button type="button" id="stop" class="btn btn-danger" disabled>Stop</button>
+        <button type="button" id="play" class="btn btn-primary"><i class="fa-solid fa-play"></i></button>
+        <button type="button" id="stop" class="btn btn-danger" disabled><i class="fa-solid fa-stop"></i></button>
     </div>
 
     <footer class="mt-auto text-center">
         <p class="mt-5"><small>Created by Brandon Pacol</small></p>
     </footer>
 
-    
     <script src="https://unpkg.com/@tonejs/midi"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.5.44/Tone.js"></script>
-    <script src="script.js"></script>
-    <script type="module" src="js/bootstrap.min.js"></script>
+    <script type="module" src="js/bootstrap.bundle.min.js"></script>
+    <script src="script.js" type="text/javascript"></script>
 </body>
 </html>
