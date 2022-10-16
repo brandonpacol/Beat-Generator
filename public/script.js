@@ -413,9 +413,11 @@ const APPController = (function(UICtrl, APICtrl) {
             if (element.classList.contains('btn-outline-secondary')) {
                 element.classList.remove('btn-outline-secondary');
                 element.classList.add('btn-secondary');
+                element.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
             } else {
                 element.classList.remove('btn-secondary');
                 element.classList.add('btn-outline-secondary');
+                element.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
             }
         })
     })
