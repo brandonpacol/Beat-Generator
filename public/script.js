@@ -304,7 +304,7 @@ const APPController = (function(UICtrl, APICtrl) {
                 part.mute = true;
             }
             part.loop = true;
-            part.loopEnd = '2m';
+            part.loopEnd = '4m';
             partArray.push(part);
         }
 
@@ -314,11 +314,16 @@ const APPController = (function(UICtrl, APICtrl) {
     let lockArray = [false, false, false];
     const generateBeat = async () => {    
         let bpm = DOMInputs.bpmSelect.value;
-
+        const tempoArray = [{
+            "bpm": bpm,
+            "ticks": 0,
+            "time": 0
+        }]
         let kickMidi;
         if (!lockArray[0]) {
             let kickMidiData = await APICtrl.getMidi('kicks', bpm);
             kickMidi = new Midi(kickMidiData.midi.data);
+            kickMidi.header.tempos = tempoArray;
         } else {
             kickMidi = APICtrl.getMidiArray()[0];
         }
@@ -327,6 +332,7 @@ const APPController = (function(UICtrl, APICtrl) {
         if (!lockArray[1]) {
             let snareMidiData = await APICtrl.getMidi('snares', bpm);        
             snareMidi = new Midi(snareMidiData.midi.data);
+            snareMidi.header.tempos = tempoArray;
         } else {
             snareMidi = APICtrl.getMidiArray()[1];
         }
@@ -335,11 +341,13 @@ const APPController = (function(UICtrl, APICtrl) {
         if (!lockArray[2]) {
             let hatMidiData = await APICtrl.getMidi('hats', bpm);
             hatMidi = new Midi(hatMidiData.midi.data);
+            hatMidi.header.tempos = tempoArray;
         } else {
             hatMidi = APICtrl.getMidiArray()[2];
         }
 
         let midiArray = [kickMidi, snareMidi, hatMidi];
+        console.log(midiArray);
         APICtrl.setMidiArray(midiArray);
         let outputMidi = await generateMidi(midiArray);
         APICtrl.setOutputMidi(outputMidi);
